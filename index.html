@@ -89,6 +89,15 @@ ul.cat-top{list-style:none;margin:8px 0 0;padding:0}ul.cat-top li{display:flex;j
 .catfilter button .cat{padding:0;background:none}
 .tlc-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .tlc-legend .cat{margin-right:4px}
+.avail{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.avail-bar{display:inline-block;width:60px;height:8px;border-radius:4px;background:#e6e9ed;overflow:hidden}
+.avail-bar>span{display:block;height:100%}
+.av-good{background:#1e7a46}.av-warn{background:#d08a00}.av-bad{background:#b42318}.av-na{background:#d5d9de}
+.av-t-good{color:#1e7a46}.av-t-warn{color:#a86a00}.av-t-bad{color:#b42318}
+.avsq{display:inline-flex;gap:3px;vertical-align:middle}.avsq>span{width:12px;height:12px;border-radius:2px}.avsq>span.cur{outline:2px solid var(--ink);outline-offset:1px}
+.availsum{display:flex;gap:18px;align-items:center;background:var(--bg);border-radius:8px;padding:10px 14px;margin:6px 0 10px;flex-wrap:wrap}
+.availsum .k{font-size:13px;color:var(--ink2)}.availsum .v{font-size:28px;font-weight:650}.availsum .d{font-size:13px;color:var(--ink2);line-height:1.9}
+.avlegend{margin-left:12px;font-size:12px;color:var(--muted);white-space:nowrap}.avlegend>span{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 8px;vertical-align:-1px}
 .tlc-top{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px}
 .tlc-map{height:430px;border-radius:8px;border:1px solid var(--line);background:#eef1f4;z-index:0}
 .tlc-nomap{display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink2);font-size:14px;padding:20px;text-align:center}
@@ -224,7 +233,11 @@ const I18N = {
     commNote: "Bygger på eDaptivas hændelser \u201dCommunication with the controller lost / restored\u201d (alvorlighed Warning/Info – medtages altid). Tabellen viser signalanlæg, der er offline nu, har haft afbrydelser eller ikke har registreret kommunikation.",
     commAllOk: "Alle {n} signalanlæg har haft stabil forbindelse i perioden og de foregående uger.",
     commOthersOk: "De øvrige {n} signalanlæg har haft stabil forbindelse i perioden og de foregående uger.",
-    thStatusNow: "Status nu", thDrops: "Afbrydelser", thOffTime: "Offline-tid i perioden", thUptime: "Oppetid",
+    thStatusNow: "Status nu", thDrops: "Afbrydelser", thOffTime: "Offline-tid i perioden", thUptime: "Tilgængelighed",
+    tAvail: "Tilgængelighed", tAvailSub: "offline i alt {d} på {n} signalanlæg", thAvailWeeks: "Tilgængelighed pr. uge",
+    availSummary: "Andel af tiden i perioden, hvor signalanlæggene havde forbindelse til eDaptiva. Offline i alt {d} fordelt på {n} af {k} signalanlæg.",
+    ofPeriod: "{p} af perioden",
+    insAvail: (p, d, n, worst) => `<b>Samlet tilgængelighed i perioden: ${p}.</b> ${n} signalanlæg har været offline i alt ${d}${worst ? ` – lavest: ${worst}` : ""}.`,
     cs: { online: "online", offline: "offline", never: "ingen kommunikation", unstable: "ustabil forbindelse", unknown: "ukendt" },
     since: "siden", durUnits: { d: "d", h: "t", m: "min" },
     hMap: "Kort og signalanlæg",
@@ -336,7 +349,11 @@ const I18N = {
     commNote: "Based on eDaptiva's events \u201cCommunication with the controller lost / restored\u201d (severity Warning/Info – always included). The table shows traffic light controllers that are offline now, have had disconnections or have no recorded communication.",
     commAllOk: "All {n} traffic light controllers had a stable connection in the period and the previous weeks.",
     commOthersOk: "The other {n} traffic light controllers had a stable connection in the period and the previous weeks.",
-    thStatusNow: "Status now", thDrops: "Disconnections", thOffTime: "Offline time in period", thUptime: "Uptime",
+    thStatusNow: "Status now", thDrops: "Disconnections", thOffTime: "Offline time in period", thUptime: "Availability",
+    tAvail: "Availability", tAvailSub: (v) => `offline ${v.d} in total on ${v.n} traffic light controller${v.n == 1 ? "" : "s"}`, thAvailWeeks: "Availability per week",
+    availSummary: (v) => `Share of the time in the period when the traffic light controllers were connected to eDaptiva. Offline ${v.d} in total across ${v.n} of ${v.k} traffic light controllers.`,
+    ofPeriod: "{p} of the period",
+    insAvail: (p, d, n, worst) => `<b>Overall availability in the period: ${p}.</b> ${n} traffic light controller${n === 1 ? " has" : "s have"} been offline ${d} in total${worst ? ` – lowest: ${worst}` : ""}.`,
     cs: { online: "online", offline: "offline", never: "no communication", unstable: "unstable connection", unknown: "unknown" },
     since: "since", durUnits: { d: "d", h: "h", m: "min" },
     hMap: "Map and Traffic Light Controllers",
@@ -538,7 +555,7 @@ function buildMapData(r) {
     const weeks = []; for (let w = 0; w < W; w++) weeks.unshift(daily.slice(w * 7, w * 7 + 7).reduce((a, b) => a + b, 0));
     return {
       name, lat: inf.lat ?? null, lon: inf.lon ?? null, cat, statusTxt, n: c.n, crit: c.crit, err: c.err, avg: c.avg,
-      comm: !!cm, drops: cm ? cm.drops : 0, offTxt: cm ? (cm.status === "never" ? "–" : cm.offMs ? fmtDur(cm.offMs) : "0") : "", uptimeTxt: cm ? (cm.status === "never" ? "–" : pct1(cm.uptime)) : "",
+      comm: !!cm, drops: cm ? cm.drops : 0, offTxt: cm ? (!cm.known ? "–" : cm.offMs ? `${fmtDur(cm.offMs)} (${pctSmall(cm.offMs / r.comm.periodLenMs)})` : "0") : "", uptimeTxt: cm ? (!cm.known ? "–" : pct1(cm.uptime)) : "", uptime: cm && cm.known ? cm.uptime : null,
       commStatus: cm ? cm.status : null, unstable: cm ? cm.unstable : false,
       faults: faults.slice(0, 6).map(f => [faultLabel(f), `${num(f.n)}×`, f.status.filter(s => s !== "repeat").map(s => F.st[s]).join(", "), f.cat]),
       daily, dailyCat: dailyCatBy[name] || { lamp: zeros(), det: zeros(), sys: zeros() }, cats: { lamp: c.lamp, det: c.det, sys: c.sys },
@@ -565,11 +582,11 @@ function renderMapSection(r) {
   <div class="tlc-root">
     <div class="tlc-top"><div class="tlc-map"></div><div class="tlc-panel"></div></div>
     <div class="tlc-legend">${legend}</div>
-    <div class="tablewrap"><table class="tlc-list"><thead><tr><th>${esc(t("thCrossing"))}</th>${hasComm ? `<th>${esc(t("thStatusNow"))}</th>` : ""}<th class="n">${esc(t("thInPeriod"))}</th>${CATS.map(c => `<th class="n">${catIcon(c)}${esc(F.catShort[c])}</th>`).join("")}${hasComm ? `<th class="n">${esc(t("thDrops"))}</th>` : ""}<th class="n">${esc(t("thAvgBefore"))}</th><th>${esc(t("thWeekly"))}</th></tr></thead><tbody>` +
+    <div class="tablewrap"><table class="tlc-list"><thead><tr><th>${esc(t("thCrossing"))}</th>${hasComm ? `<th>${esc(t("thStatusNow"))}</th>` : ""}<th class="n">${esc(t("thInPeriod"))}</th>${CATS.map(c => `<th class="n">${catIcon(c)}${esc(F.catShort[c])}</th>`).join("")}${hasComm ? `<th class="n">${esc(t("thDrops"))}</th><th>${esc(t("thUptime"))}</th>` : ""}<th class="n">${esc(t("thAvgBefore"))}</th><th>${esc(t("thWeekly"))}</th></tr></thead><tbody>` +
     D.items.map((it, i) => `<tr data-tlc="${i}"><td><span class="dot c-${it.cat}"></span>${esc(it.name)}${it.lat == null ? ' <span class="small">⌀</span>' : ""}</td>` +
       (hasComm ? `<td>${it.commStatus ? `<span class="badge b-${it.commStatus}">${esc(F.cs[it.commStatus])}</span>` : ""}${it.unstable ? `<span class="badge b-unstable">${esc(F.cs.unstable)}</span>` : ""}</td>` : "") +
       `<td class="n"><b>${num(it.n)}</b></td>${CATS.map(c => `<td class="n">${it.cats[c] ? num(it.cats[c]) : '<span class="small">0</span>'}</td>`).join("")}` +
-      (hasComm ? `<td class="n">${num(it.drops)}</td>` : "") +
+      (hasComm ? `<td class="n">${num(it.drops)}</td><td>${availBar(it.uptime)}</td>` : "") +
       `<td class="n">${num(it.avg, 1)}</td><td>${spark(it.weeksHist, it.n)}</td></tr>`).join("") +
     `</tbody></table></div>
   </div>`;
@@ -611,7 +628,7 @@ const SITES = [
   { id: "esbjerg", name: { da: "Esbjerg Kommune", en: "Esbjerg Municipality" }, host: "https://esbjerg-edaptiva.cross.cz", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71" },
   { id: "verdo", name: { da: "Verdo – generel (vælg område)", en: "Verdo – general (choose area)" }, short: "Verdo", host: "https://verdo.edaptiva.cloud", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71", areas: true },
 ];
-const APP_VERSION = "10 · 26.11.2026";
+const APP_VERSION = "11 · 26.11.2026";
 const API_TIMEOUT_MS = 60000;   // one call to eDaptiva may take at most this long (then 1 retry)
 const COMM_BUDGET_MS = 90000;   // the whole connectivity check may take at most this long
 const STATUS_LOOKBACK_DAYS = 180;  // latest connection status is looked up within this many days
@@ -1144,36 +1161,51 @@ function analyse(rawEvents, from, to, sevs, crossings) {
 /* --------------------------- CONNECTIVITY ANALYSIS --------------------------- */
 function analyseComm(rawEvents, latest, scope, from, to) {
   const pStart = dayStart(from), pEnd = dayStart(to, 1), now = Date.now(), pEndEff = Math.min(pEnd, now);
+  const hStart = dayStart(from, -7 * HISTORY_WEEKS);
   const periodDays = Math.round((pEnd - pStart) / 864e5);
   const seen = new Set(), byUuid = {};
   for (const e of rawEvents) {
     if (seen.has(e.Id)) continue; seen.add(e.Id);
     (byUuid[e.ControllerUUID] = byUuid[e.ControllerUUID] || []).push({ t: parseT(e.EventStampOn), lost: e.MessageCode === COMM_LOST });
   }
+  const overlap = (ivs, a, b) => ivs.reduce((s, [x, y]) => s + Math.max(0, Math.min(y, b) - Math.max(x, a)), 0);
+  // windows: the history weeks (newest first, like elsewhere) and the period
+  const weekWin = Array.from({ length: HISTORY_WEEKS }, (_, w) => [pStart - (w + 1) * 7 * 864e5, pStart - w * 7 * 864e5]);
   const rows = scope.map(c => {
     const evs = (byUuid[c.uuid] || []).sort((a, b) => a.t - b.t);
     const lat = latest[c.uuid] || {};
-    // state at the start of the period
-    const before = evs.filter(e => e.t < pStart);
-    let offline = before.length ? before[before.length - 1].lost : (lat.t != null && lat.t < pStart ? lat.lost : false);
-    let offStart = offline ? pStart : null, offMs = 0, drops = 0;
-    for (const e of evs) {
-      if (e.t < pStart || e.t >= pEnd) continue;
-      if (e.lost) { drops++; if (!offline) { offline = true; offStart = e.t; } }
-      else if (offline) { offMs += e.t - offStart; offline = false; offStart = null; }
-    }
-    if (offline && offStart != null) offMs += Math.max(0, pEndEff - offStart);
-    const weeks = new Array(HISTORY_WEEKS).fill(0);
-    for (const e of evs) if (e.lost && e.t < pStart) { const w = Math.floor((pStart - e.t) / (7 * 864e5)); if (w < HISTORY_WEEKS) weeks[w]++; }
-    const len = Math.max(1, pEndEff - pStart);
     const status = lat.never ? "never" : lat.none ? "online" : lat.t == null ? "unknown" : lat.lost ? "offline" : "online";
+    /* offline intervals from the start of the history to the end of the period.
+       State at the start: if the first event we see is "restored", it was offline before;
+       with no events at all, the latest known status (if older) decides. */
+    let offline = evs.length ? !evs[0].lost : (lat.t != null && lat.t < hStart ? !!lat.lost : false);
+    if (status === "never" || status === "unknown") offline = false;
+    const ivs = []; let offStart = offline ? hStart : null, drops = 0;
+    for (const e of evs) {
+      if (e.t >= pEnd) break;
+      if (e.lost) { if (e.t >= pStart) drops++; if (!offline) { offline = true; offStart = e.t; } }
+      else if (offline) { ivs.push([offStart, e.t]); offline = false; offStart = null; }
+    }
+    if (offline && offStart != null) ivs.push([offStart, pEndEff]);
+    const len = Math.max(1, pEndEff - pStart);
+    const offMs = overlap(ivs, pStart, pEndEff);
+    const known = status !== "never" && status !== "unknown";
+    const weekAvail = weekWin.map(([a, b]) => known ? Math.max(0, 1 - overlap(ivs, a, b) / (b - a)) : null);
+    const weeks = weekWin.map(([a, b]) => evs.filter(e => e.lost && e.t >= a && e.t < b).length);
     return { name: c.name || c.uuid.slice(0, 8), uuid: c.uuid, status, since: status === "offline" ? lat.t : null, drops, weeks,
-             offMs, uptime: Math.max(0, 1 - offMs / len), unstable: drops / periodDays >= UNSTABLE_PER_DAY };
+             offMs, uptime: known ? Math.max(0, 1 - offMs / len) : null, weekAvail, known,
+             unstable: drops / periodDays >= UNSTABLE_PER_DAY };
   });
-  const order = (r) => r.status === "offline" ? 0 : r.status === "never" ? 1 : r.unstable ? 2 : r.drops ? 3 : r.weeks.some(Boolean) ? 4 : 5;
-  rows.sort((a, b) => order(a) - order(b) || (a.since || 0) - (b.since || 0) || b.drops - a.drops || b.offMs - a.offMs);
+  const order = (r) => r.status === "offline" ? 0 : r.status === "never" ? 1 : r.unstable ? 2 : r.offMs ? 3 : r.drops ? 4 : r.weeks.some(Boolean) ? 5 : 6;
+  rows.sort((a, b) => order(a) - order(b) || (a.since || 0) - (b.since || 0) || b.offMs - a.offMs || b.drops - a.drops);
+  /* area availability: offline time over (number of controllers with known status × period length) */
+  const knownRows = rows.filter(r => r.known), len = Math.max(1, pEndEff - pStart);
+  const offTotal = knownRows.reduce((s, r) => s + r.offMs, 0);
+  const availWeeks = weekWin.map((_, w) => knownRows.length ? knownRows.reduce((s, r) => s + r.weekAvail[w], 0) / knownRows.length : null);
   return { rows, total: rows.length, offlineNow: rows.filter(r => r.status === "offline"), never: rows.filter(r => r.status === "never"),
-           unstable: rows.filter(r => r.unstable && r.status !== "offline"), periodDays };
+           unstable: rows.filter(r => r.unstable && r.status !== "offline"), periodDays, periodLenMs: len,
+           avail: knownRows.length ? 1 - offTotal / (knownRows.length * len) : null, availWeeks, offTotal,
+           withOffline: knownRows.filter(r => r.offMs > 0).length, knownCount: knownRows.length };
 }
 
 /* --------------------------- TEXT FOR FAULTS --------------------------- */
@@ -1190,6 +1222,11 @@ function insights(r) {
     if (c.offlineNow.length) out.push({ lvl: "crit", html: F.insOffline(c.offlineNow.length,
       c.offlineNow.map(x => `${esc(x.name)} (${esc(F.since)} ${esc(fmtSince(x.since))}, ${esc(fmtDur(now - x.since))})`).join("; ")) });
     if (c.never.length) out.push({ lvl: "warn", html: F.insNever(c.never.length, c.never.map(x => esc(x.name)).join(", ")) });
+    if (c.avail != null && c.offTotal > 0) {
+      const worst = c.rows.filter(x => x.known && x.offMs > 0).sort((a, b) => a.uptime - b.uptime).slice(0, 3)
+        .map(x => `${esc(x.name)} ${esc(pct1(x.uptime))}`).join(", ");
+      out.push({ lvl: c.avail < 0.99 ? "warn" : "", html: F.insAvail(esc(pct1(c.avail)), esc(fmtDur(c.offTotal)), c.withOffline, worst) });
+    }
     for (const x of c.unstable.slice(0, 3)) out.push({ lvl: "warn", html: F.insUnstable(esc(x.name), num(x.drops), esc(fmtDur(x.offMs))) });
   }
   const flap = r.active.filter(f => f.status.includes("flap"));
@@ -1280,22 +1317,40 @@ function noFaultCount(r) {
 function renderComm(r) {
   const c = r.comm, F = L();
   if (!c) return "";
-  const shown = c.rows.filter(x => x.status !== "online" || x.drops || x.weeks.some(Boolean));
+  const shown = c.rows.filter(x => x.status !== "online" || x.drops || x.offMs || x.weeks.some(Boolean) || x.weekAvail.some(a => a != null && a < 1));
   const okCount = c.total - shown.length;
   let h = `<h3>${esc(t("hComm"))}</h3><p class="note">${esc(t("commNote"))}${c.skipped ? " " + esc(t("commSkipped", { n: c.skipped })) : ""}</p>`;
   if (!shown.length) return h + `<p>${esc(t("commAllOk", { n: c.total }))}</p>`;
   const now = Date.now();
   const st = (x) => x.status === "offline" ? `<span class="badge b-offline">${esc(F.cs.offline)}</span><br><span class="small">${esc(F.since)} ${esc(fmtSince(x.since))} (${esc(fmtDur(now - x.since))})</span>`
     : `<span class="badge b-${x.status}">${esc(F.cs[x.status])}</span>`;
-  h += `<div class="tablewrap"><table><thead><tr><th>${esc(t("thCrossing"))}</th><th>${esc(t("thStatusNow"))}</th><th class="n">${esc(t("thDrops"))}</th><th>${esc(t("thWeekly"))}</th><th class="n">${esc(t("thOffTime"))}</th><th class="n">${esc(t("thUptime"))}</th></tr></thead><tbody>` +
+  const weekStarts = Array.from({ length: HISTORY_WEEKS }, (_, w) => dayStart(r.from) - (w + 1) * 7 * 864e5);
+  h += `<div class="availsum"><div><div class="k">${esc(t("tAvail"))}</div><div class="v av-t-${availClass(c.avail)}">${c.avail == null ? "–" : esc(pct1(c.avail))}</div></div>
+    <div class="d">${esc(t("availSummary", { d: fmtDur(c.offTotal), n: c.withOffline, k: c.knownCount }))}<br>${esc(t("thAvailWeeks"))}: ${availSquares(c.availWeeks, c.avail, weekStarts)}
+    <span class="avlegend">${(() => { const p = (v, d) => num(v, d) + (LANG === "da" ? " %" : "%"); return `<span class="av-good"></span>≥ ${p(99.5, 1)} <span class="av-warn"></span>${p(95)}–${p(99.5, 1)} <span class="av-bad"></span>&lt; ${p(95)}`; })()}</span></div></div>`;
+  h += `<div class="tablewrap"><table><thead><tr><th>${esc(t("thCrossing"))}</th><th>${esc(t("thStatusNow"))}</th><th class="n">${esc(t("thDrops"))}</th><th>${esc(t("thWeekly"))}</th><th class="n">${esc(t("thOffTime"))}</th><th>${esc(t("thUptime"))}</th><th>${esc(t("thAvailWeeks"))}</th></tr></thead><tbody>` +
     shown.map(x => `<tr><td>${esc(x.name)}</td><td>${st(x)}${x.unstable ? ` <span class="badge b-unstable">${esc(F.cs.unstable)}</span>` : ""}</td>
       <td class="n"><b>${num(x.drops)}</b></td><td>${spark(x.weeks, x.drops)}</td>
-      <td class="n">${x.status === "never" ? "–" : x.offMs ? esc(fmtDur(x.offMs)) : "0"}</td><td class="n">${x.status === "never" ? "–" : esc(pct1(x.uptime))}</td></tr>`).join("") +
+      <td class="n">${!x.known ? "–" : x.offMs ? `${esc(fmtDur(x.offMs))}<br><span class="small">${esc(t("ofPeriod", { p: pctSmall(x.offMs / c.periodLenMs) }))}</span>` : "0"}</td>
+      <td>${availBar(x.uptime)}</td><td>${x.known ? availSquares(x.weekAvail, x.uptime, weekStarts) : "–"}</td></tr>`).join("") +
     `</tbody></table></div>`;
   if (okCount) h += `<p class="small">${esc(t("commOthersOk", { n: okCount }))}</p>`;
   return h;
 }
 const pct1 = (x) => { const v = x * 100, s = v >= 99.95 || v === 0 ? num(v) : num(v, 1); return LANG === "da" ? `${s} %` : `${s}%`; };
+/* small share (offline %): show "<0,1 %" instead of "0,0 %" */
+const pctSmall = (x) => x > 0 && x < 0.001 ? (LANG === "da" ? "<0,1 %" : "<0.1%") : pct1(x);
+const availClass = (a) => a == null ? "na" : a >= 0.995 ? "good" : a >= 0.95 ? "warn" : "bad";
+function availBar(a) {
+  if (a == null) return "–";
+  return `<span class="avail"><span class="avail-bar"><span class="av-${availClass(a)}" style="width:${Math.max(2, a * 100).toFixed(1)}%"></span></span>${esc(pct1(a))}</span>`;
+}
+/* availability per week (oldest → period) as small coloured squares */
+function availSquares(weekAvail, cur, weekStarts) {
+  const vals = [...weekAvail].reverse().concat([cur]);
+  const labels = [...weekStarts].reverse().map(s => fmtD(s)).concat([t("periodLbl")]);
+  return `<span class="avsq">` + vals.map((v, i) => `<span class="av-${availClass(v)}${i === vals.length - 1 ? " cur" : ""}" title="${esc(labels[i])}: ${v == null ? "–" : esc(pct1(v))}"></span>`).join("") + `</span>`;
+}
 
 /* ---- the three fault categories: share bar + one card each ---- */
 function renderTypes(r) {
@@ -1344,6 +1399,7 @@ function renderReport(r) {
     <div class="tile"><div class="k">${esc(t("tEvents"))}</div><div class="v">${num(r.cur.length)}</div><div class="d">${delta(r.curPerWeek, r.baselinePerWeek)}</div></div>
     <div class="tile"><div class="k">${esc(t("tCrit"))}</div><div class="v">${num(crit)}</div><div class="d">${esc(t("tCritSub", { n: num(r.cur.length - crit) }))}</div></div>
     ${r.crossingsTotal ? `<div class="tile"><div class="k">${esc(t("tNoFault"))}</div><div class="v">${esc(t("tNoFaultV", { a: noFaultCount(r), b: r.crossingsTotal }))}</div><div class="d">${esc(t("inPeriod"))}</div></div>` : ""}
+    ${r.comm && r.comm.avail != null ? `<div class="tile"><div class="k">${esc(t("tAvail"))}</div><div class="v av-t-${availClass(r.comm.avail)}">${esc(pct1(r.comm.avail))}</div><div class="d">${esc(t("tAvailSub", { d: fmtDur(r.comm.offTotal), n: r.comm.withOffline }))}</div></div>` : ""}
     ${r.comm ? `<div class="tile"><div class="k">${esc(t("tOffline"))}</div><div class="v${r.comm.offlineNow.length ? " up" : ""}">${esc(t("tNoFaultV", { a: r.comm.offlineNow.length, b: r.comm.total }))}</div><div class="d">${esc(t("tOfflineSub", { n: r.comm.never.length }))}</div></div>` : ""}
     <div class="tile"><div class="k">${esc(t("tFaults"))}</div><div class="v">${num(r.active.length)}</div><div class="d">${esc(t("tFaultsSub", { c: withFaults, i: num(r.incidents.length) }))}</div></div>
     <div class="tile"><div class="k">${esc(t("tRepeat"))}</div><div class="v">${num(repeating)}</div><div class="d">${esc(t("tRepeatSub"))}</div></div>
@@ -1436,6 +1492,7 @@ function emailReport() {
   const figures = [
     `• ${t("tEvents")}: ${num(r.cur.length)} (${plain(delta(r.curPerWeek, r.baselinePerWeek))})`,
     `• ${t("tCrit")}: ${num(crit)}`,
+    r.comm && r.comm.avail != null ? `• ${t("tAvail")}: ${pct1(r.comm.avail)} (${t("tAvailSub", { d: fmtDur(r.comm.offTotal), n: r.comm.withOffline })})` : null,
     `• ${t("hTypes")}: ${CATS.map(c => `${L().cat[c]} ${num(r.cats[c].n)}`).join(" · ")}`,
     r.crossingsTotal ? `• ${t("tNoFault")}: ${t("tNoFaultV", { a: noFaultCount(r), b: r.crossingsTotal })}` : null,
     `• ${t("tFaults")}: ${num(r.active.length)}`,
