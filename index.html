@@ -46,6 +46,26 @@ h3{margin:22px 0 8px;font-size:16px}
 details.diag{margin-top:28px;font-size:13px;color:var(--ink2)}
 details.diag pre{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px;max-height:300px;overflow:auto}
 .hidden{display:none!important}
+.actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-bottom:8px}
+.rep-head{border-bottom:3px solid var(--ink);padding-bottom:10px;margin-bottom:18px}
+.rep-head h2{margin:0;font-size:22px}.rep-head .sub{color:var(--ink2);font-size:14px}
+.report h3{font-size:17px;margin:28px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.tile .d{font-size:12px;color:var(--muted)}
+.up{color:var(--crit)}.down{color:var(--ok)}
+ul.insights{margin:0;padding:0;list-style:none}
+ul.insights li{padding:10px 12px 10px 14px;border-left:4px solid var(--ink2);background:var(--bg);border-radius:0 6px 6px 0;margin-bottom:8px}
+ul.insights li.crit{border-left-color:var(--crit)}ul.insights li.warn{border-left-color:#c98a00}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600;white-space:nowrap;margin:1px 4px 1px 0}
+.b-vedvarende{color:var(--crit);background:var(--crit-bg)}.b-stigende{color:#b54708;background:#fef0e1}
+.b-tilbagevendende{color:var(--warn);background:var(--warn-bg)}.b-ny{color:#175cd3;background:#eaf1fd}
+.b-gentaget{color:var(--ink);background:#e9edf0}.b-udbedret{color:var(--ok);background:var(--ok-bg)}
+.spark{display:inline-flex;gap:2px;align-items:flex-end;height:20px;vertical-align:middle}
+.spark span{width:7px;background:#a9c2df;border-radius:1px 1px 0 0;min-height:1px}
+.spark span.z{background:#e2e6ea}.spark span.cur{background:#1f4f86}
+.note{font-size:13px;color:var(--ink2);background:var(--bg);padding:8px 12px;border-radius:6px;margin:8px 0}
+code{font-size:13px}
+@media print{body{background:#fff;font-size:12px}.wrap{padding:0;max-width:none}.noprint,#view-app>header,#view-app>.card:first-of-type,details.diag{display:none!important}
+ .card{border:0;padding:0;margin:0}tr,li,.tile{break-inside:avoid}h3{break-after:avoid}}
 @media (max-width:600px){.card{padding:16px}}
 </style>
 </head>
@@ -97,14 +117,12 @@ details.diag pre{white-space:pre-wrap;background:#fff;border:1px solid var(--lin
       </form>
     </div>
 
-    <div id="result" class="card hidden">
-      <div class="tiles" id="tiles"></div>
-      <h3>Pr. kryds</h3>
-      <div class="tablewrap"><table id="by-ctrl"></table></div>
-      <h3>Alle hændelser</h3>
-      <div class="tablewrap"><table id="events"></table></div>
-      <p style="margin-top:16px"><button class="secondary" id="dl-json" type="button">Download data (JSON)</button>
-        <span class="small">– til udvikling af selve rapporten</span></p>
+    <div id="result" class="card report hidden">
+      <div class="noprint actions">
+        <button type="button" id="print-btn">Udskriv / gem som PDF</button>
+        <button class="secondary" id="dl-json" type="button">Download data (JSON)</button>
+      </div>
+      <div id="report"></div>
     </div>
   </section>
 
@@ -122,6 +140,8 @@ const SITES = [
 ];
 const SEVERITY = { 3: "Error", 4: "Critical error" };
 const PAGE_SIZE = 500, MAX_PAGES = 200;
+const HISTORY_WEEKS = 8;        // weeks before the period used for trends
+const INCIDENT_GAP_S = 10;      // events on the same crossing within this many seconds = one incident
 
 /* test override: ?host=http://localhost:8766&apiId=test (used only for local testing) */
 (() => {
@@ -270,20 +290,22 @@ async function fetchEvents(ev) {
   const btn = $("fetch-btn"); btn.disabled = true;
   const clientId = crypto.randomUUID ? crypto.randomUUID() : "00000000-0000-0000-0000-000000000000";
   const all = [];
+  const histFrom = addDays(from, -7 * HISTORY_WEEKS);   // also fetch previous weeks for trend comparison
   try {
     for (let page = 0; page < MAX_PAGES; page++) {
-      msg($("fetch-msg"), "info", `Henter… (${all.length} hændelser indtil nu)`);
-      const f = buildFilter(from, to, sevs, page);
+      msg($("fetch-msg"), "info", `Henter periode + ${HISTORY_WEEKS} ugers historik… (${all.length} hændelser indtil nu)`);
+      const f = buildFilter(histFrom, to, sevs, page);
       const path = `EventArchive/${clientId}/all?filter=${encodeURIComponent(JSON.stringify(f))}&culture=en-US`;
       log("GET EventArchive side", page);
       const rows = await apiGet(path);
       all.push(...rows);
       if (rows.length < PAGE_SIZE) break;
     }
-    state.data = { site: state.site.id, from, to, severities: sevs, fetched: new Date().toISOString(), events: all };
-    log("Hentet", all.length, "hændelser");
-    msg($("fetch-msg"), "ok", `Hentet ${all.length} hændelser fra ${fmtDate(from)} til ${fmtDate(to)}.`);
-    render(all);
+    state.data = { site: state.site.id, from, to, historyFrom: histFrom, severities: sevs, fetched: new Date().toISOString(), events: all };
+    log("Hentet", all.length, "hændelser (inkl. historik fra", histFrom + ")");
+    const report = analyse(all, from, to, sevs);
+    msg($("fetch-msg"), "ok", `Rapport lavet: ${report.cur.length} hændelser i perioden ${fmtDate(from)}–${fmtDate(to)} (+ ${report.hist.length} i de ${HISTORY_WEEKS} foregående uger til sammenligning).`);
+    renderReport(report);
   } catch (e) {
     if (e.session) { msg($("login-msg"), "err", "Din session er udløbet – log ind igen."); logout(); return; }
     if (e instanceof TypeError) { log("Netværks-/CORS-fejl:", e.message); msg($("fetch-msg"), "err", "Kunne ikke hente data (netværk eller CORS). Se teknisk log."); }
@@ -291,36 +313,277 @@ async function fetchEvents(ev) {
   } finally { btn.disabled = false; }
 }
 
-/* --------------------------- RENDER --------------------------- */
+/* --------------------------- ANALYSIS --------------------------- */
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtDate = (d) => d.split("-").reverse().join(".");
-const fmtTime = (iso) => { const d = new Date(iso); return d.toLocaleString("da-DK", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }); };
+const pad = (n) => String(n).padStart(2, "0");
+const fmtDT = (ms) => { const d = new Date(ms); return `${pad(d.getDate())}.${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const fmtD = (ms) => { const d = new Date(ms); return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}`; };
+const dayKey = (ms) => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+/* local midnight of "YYYY-MM-DD" + n days (DST safe) */
+function dayStart(str, n = 0) { const [y, m, d] = str.split("-").map(Number); return new Date(y, m - 1, d + n).getTime(); }
+function addDays(str, n) { return dayKey(dayStart(str, n)); }
 
-function render(events) {
-  const bySev = {}, byCtrl = {};
-  for (const e of events) {
-    bySev[e.Severity] = (bySev[e.Severity] || 0) + 1;
-    const c = (e.ControllerName || "").trim() || "(ukendt)";
-    byCtrl[c] = byCtrl[c] || { n: 0, 3: 0, 4: 0, msgs: {} };
-    byCtrl[c].n++; byCtrl[c][e.Severity] = (byCtrl[c][e.Severity] || 0) + 1;
-    const m = (e.Message || "").replace(/'[^']*'/g, "'…'");
-    byCtrl[c].msgs[m] = (byCtrl[c].msgs[m] || 0) + 1;
+const LAMP_CODES = new Set(["60005", "60006", "60007", "60010"]);
+const COLOR_DA = { red: "rød", yellow: "gul", green: "grøn", amber: "gul" };
+
+/* Turn one raw eDaptiva event into what the report needs */
+function normalise(e) {
+  const code = String(e.MessageCode || "").split(":").pop();
+  const p = e.MessageParameters || [];
+  const msgTxt = e.Message || "";
+  let family, detail = "", comp = "";
+  if (code === "60014") { family = "Detektorfejl"; comp = String(p[0] ?? (msgTxt.match(/'([^']*)'/) || [])[1] ?? ""); }
+  else if (LAMP_CODES.has(code)) {
+    family = "Lampefejl"; comp = "Signalgruppe " + (p[0] ?? (msgTxt.match(/Signal group:\s*([^,)]+)/) || [])[1] ?? "?");
+    const col = code === "60010" ? "red" : ((msgTxt.match(/Color:\s*(\w+)/i) || [])[1] || "").toLowerCase();
+    detail = COLOR_DA[col] || col;
   }
-  $("tiles").innerHTML =
-    `<div class="tile"><div class="k">Hændelser i alt</div><div class="v">${events.length}</div></div>` +
-    `<div class="tile"><div class="k">Critical error</div><div class="v">${bySev[4] || 0}</div></div>` +
-    `<div class="tile"><div class="k">Error</div><div class="v">${bySev[3] || 0}</div></div>` +
-    `<div class="tile"><div class="k">Kryds med hændelser</div><div class="v">${Object.keys(byCtrl).length}</div></div>`;
+  else if (code === "60003") family = "Kritisk systemfejl";
+  else if (code === "60001") family = "Strømforsyningsfejl";
+  else if (code === "60026") family = "Tidsjustering (ur)";
+  else if (code === "60024") family = "Omløbsovervågning";
+  else if (code === "60037") family = "Busprioritering – modtagerfejl";
+  else family = msgTxt || e.MessageCode || "Ukendt";
 
-  const ctrls = Object.entries(byCtrl).sort((a, b) => b[1].n - a[1].n);
-  $("by-ctrl").innerHTML = `<thead><tr><th>Kryds</th><th class="n">I alt</th><th class="n">Critical</th><th class="n">Error</th><th>Typer</th></tr></thead><tbody>` +
-    ctrls.map(([c, v]) => `<tr><td>${esc(c)}</td><td class="n"><b>${v.n}</b></td><td class="n">${v[4] || 0}</td><td class="n">${v[3] || 0}</td><td>${
-      Object.entries(v.msgs).sort((a, b) => b[1] - a[1]).map(([m, n]) => `${esc(m)} (${n})`).join("<br>")}</td></tr>`).join("") + "</tbody>";
+  const extra = (e.SecondaryEvents || []).map(s => {
+    const m = s.Message || "";
+    if (/Parasite voltage/i.test(m)) return "parasitspænding";
+    const ina = m.match(/inactivity time:\s*(\d+)/i);
+    if (ina) return "inaktivitet " + ina[1];
+    return m;
+  });
+  const t = new Date(e.EventStampOn).getTime();
+  const h = new Date(t).getHours();
+  return { id: e.Id, t, ctrl: (e.ControllerName || "").trim() || "(ukendt)", sev: e.Severity, code, family, detail, comp,
+           extra, night: h >= 22 || h < 6, msg: msgTxt, rawCode: e.MessageCode,
+           key: [(e.ControllerName || "").trim(), family, comp].join("|") };
+}
 
-  $("events").innerHTML = `<thead><tr><th>Tidspunkt</th><th>Kryds</th><th>Alvorlighed</th><th>Besked</th><th>Kode</th><th>Ekstra info</th></tr></thead><tbody>` +
-    events.map(e => `<tr><td>${esc(fmtTime(e.EventStampOn))}</td><td>${esc((e.ControllerName || "").trim())}</td>` +
-      `<td><span class="sev sev-${e.Severity}">${esc(SEVERITY[e.Severity] || e.Severity)}</span></td><td>${esc(e.Message)}</td>` +
-      `<td class="small">${esc(e.MessageCode)}</td><td class="small">${(e.SecondaryEvents || []).map(s => esc(s.Message)).join("<br>")}</td></tr>`).join("") + "</tbody>";
+const faultLabel = (f) => f.comp ? `${f.family} – ${f.comp}` : f.family;
+
+function analyse(rawEvents, from, to, sevs) {
+  // de-duplicate (overlapping pages) and normalise
+  const seen = new Set(), evs = [];
+  for (const e of rawEvents) { const k = e.Id || JSON.stringify(e); if (!seen.has(k)) { seen.add(k); evs.push(normalise(e)); } }
+  evs.sort((a, b) => a.t - b.t);
+
+  const pStart = dayStart(from), pEnd = dayStart(to, 1), hStart = dayStart(from, -7 * HISTORY_WEEKS);
+  const periodDays = Math.round((pEnd - pStart) / 864e5);
+  const cur = evs.filter(e => e.t >= pStart && e.t < pEnd);
+  const hist = evs.filter(e => e.t >= hStart && e.t < pStart);
+  const weekIdx = (t) => Math.floor((pStart - t) / (7 * 864e5)); // 0 = week just before the period
+  const baselinePerWeek = hist.length / HISTORY_WEEKS;
+
+  /* ---- incidents: events on one crossing within INCIDENT_GAP_S seconds of each other ---- */
+  const incidents = [];
+  const byCtrlCur = {};
+  for (const e of cur) (byCtrlCur[e.ctrl] = byCtrlCur[e.ctrl] || []).push(e);
+  for (const [ctrl, list] of Object.entries(byCtrlCur)) {
+    let inc = null;
+    for (const e of list) {
+      if (inc && e.t - inc.end <= INCIDENT_GAP_S * 1000) { inc.events.push(e); inc.end = e.t; }
+      else { inc = { ctrl, start: e.t, end: e.t, events: [e] }; incidents.push(inc); }
+    }
+  }
+  for (const inc of incidents) {
+    const parts = [...new Set(inc.events.map(e => faultLabel(e)))];
+    inc.signature = parts.sort((a, b) => (a.startsWith("Kritisk") ? 1 : 0) - (b.startsWith("Kritisk") ? 1 : 0)).join(" + ");
+    inc.detectors = [...new Set(inc.events.filter(e => e.family === "Detektorfejl").map(e => e.comp))];
+  }
+  // repeating incident patterns (same crossing, same combination)
+  const patterns = {};
+  for (const inc of incidents) {
+    const k = inc.ctrl + "|" + inc.signature;
+    (patterns[k] = patterns[k] || { ctrl: inc.ctrl, signature: inc.signature, list: [] }).list.push(inc);
+  }
+  const patternList = Object.values(patterns).sort((a, b) => b.list.length - a.list.length);
+
+  /* ---- faults (crossing + type + component) ---- */
+  const faults = {};
+  const mk = (e) => faults[e.key] = faults[e.key] || { key: e.key, ctrl: e.ctrl, family: e.family, comp: e.comp,
+    cur: [], weeks: new Array(HISTORY_WEEKS).fill(0), histTotal: 0, sev: 0, details: {}, extras: {} };
+  for (const e of cur) {
+    const f = mk(e); f.cur.push(e); f.sev = Math.max(f.sev, e.sev);
+    if (e.detail) f.details[e.detail] = (f.details[e.detail] || 0) + 1;
+    for (const x of e.extra) f.extras[x.replace(/\d+$/, "").trim()] = (f.extras[x.replace(/\d+$/, "").trim()] || 0) + 1;
+  }
+  for (const e of hist) { const f = mk(e); const w = weekIdx(e.t); if (w >= 0 && w < HISTORY_WEEKS) f.weeks[w]++; f.histTotal++; }
+
+  const faultList = Object.values(faults).map(f => {
+    const n = f.cur.length;
+    const wp = f.weeks.filter(x => x > 0).length;
+    const days = new Set(f.cur.map(e => dayKey(e.t))).size;
+    const avg = f.histTotal / HISTORY_WEEKS;
+    const perWeek = n * 7 / periodDays;
+    const status = [];
+    if (n === 0) { if (wp >= 2) status.push("udbedret"); }
+    else {
+      if (wp >= 4) status.push("vedvarende");
+      else if (wp >= 1) status.push("tilbagevendende");
+      else status.push("ny");
+      if (wp >= 1 && n >= 3 && perWeek > 2 * avg) status.push("stigende");
+      if (n >= 3 || days >= 2) status.push("gentaget");
+    }
+    const nightShare = n ? f.cur.filter(e => e.night).length / n : 0;
+    // how often this fault came together with a critical system error in the same incident
+    const withCrit = n ? f.cur.filter(e => incidents.some(i => i.events.includes(e) && i.events.some(x => x.family === "Kritisk systemfejl" && x !== e))).length : 0;
+    return { ...f, n, wp, days, avg, status, nightShare, withCrit, last: n ? f.cur[n - 1].t : null, first: n ? f.cur[0].t : null };
+  });
+  const rank = (f) => (f.status.includes("vedvarende") ? 0 : f.status.includes("stigende") ? 1 : f.status.includes("tilbagevendende") ? 2 : 3) * 1000 - f.n - (f.sev === 4 ? 500 : 0);
+  const active = faultList.filter(f => f.n > 0).sort((a, b) => rank(a) - rank(b));
+  const gone = faultList.filter(f => f.status.includes("udbedret")).sort((a, b) => b.wp - a.wp);
+
+  /* ---- per crossing ---- */
+  const ctrls = {};
+  for (const e of cur) { const c = ctrls[e.ctrl] = ctrls[e.ctrl] || { name: e.ctrl, n: 0, crit: 0, err: 0, hist: 0 }; c.n++; e.sev === 4 ? c.crit++ : c.err++; }
+  for (const e of hist) { const c = ctrls[e.ctrl] = ctrls[e.ctrl] || { name: e.ctrl, n: 0, crit: 0, err: 0, hist: 0 }; c.hist++; }
+  const ctrlList = Object.values(ctrls).map(c => ({ ...c, avg: c.hist / HISTORY_WEEKS, incidents: incidents.filter(i => i.ctrl === c.name).length }))
+    .sort((a, b) => b.n - a.n || b.avg - a.avg);
+
+  /* ---- weekly series: 8 previous weeks + the period ---- */
+  const weekly = [];
+  for (let w = HISTORY_WEEKS - 1; w >= 0; w--) {
+    const s = pStart - (w + 1) * 7 * 864e5;
+    weekly.push({ label: fmtD(s), count: hist.filter(e => weekIdx(e.t) === w).length, cur: false });
+  }
+  weekly.push({ label: "Periode", count: cur.length, cur: true });
+
+  return { from, to, sevs, periodDays, cur, hist, incidents, patternList, active, gone, ctrlList, weekly,
+           baselinePerWeek, curPerWeek: cur.length * 7 / periodDays, insights: insights() };
+
+  /* ---- automatic observations, most important first ---- */
+  function insights() {
+    const out = [];
+    for (const p of patternList) {
+      if (p.list.length < 3 || !p.list.some(i => i.events.length >= 2)) continue;
+      const days = [...new Set(p.list.map(i => fmtD(i.start)))];
+      const hasCrit = p.signature.includes("Kritisk systemfejl") && p.signature.includes("+");
+      const evs = p.list.flatMap(i => i.events);
+      const extras = [...new Set(evs.flatMap(e => e.extra.map(x => x.replace(/\d+$/, "").trim())))];
+      out.push({ lvl: evs.some(e => e.sev === 4) ? "crit" : "warn",
+        html: `<b>${esc(p.ctrl)}:</b> ${esc(p.signature)} gentog sig <b>${p.list.length} gange</b> (${esc(days.join(", "))}).` +
+          (extras.length ? ` Ekstra info: ${esc(extras.join(", "))}.` : "") +
+          (hasCrit ? " Kritisk systemfejl kommer i samme sekund som den anden fejl – sandsynligvis en følgefejl, så det er én fejl at udbedre, ikke to." : "") });
+    }
+    for (const inc of incidents) {
+      if (inc.detectors.length >= 3) {
+        out.push({ lvl: "warn", html: `<b>${esc(inc.ctrl)}:</b> ${inc.detectors.length} detektorer faldt ud inden for ${Math.round((inc.end - inc.start) / 1000)} sek. den ${esc(fmtDT(inc.start))} (${esc(inc.detectors.join(", "))}). Når flere detektorer fejler samtidig, tyder det på en fælles årsag frem for fejl på de enkelte detektorer.` });
+      }
+    }
+    const persist = {};
+    for (const f of active.filter(f => f.status.includes("vedvarende"))) (persist[f.ctrl + "|" + f.family] = persist[f.ctrl + "|" + f.family] || []).push(f);
+    for (const list of Object.values(persist).slice(0, 5)) {
+      const f0 = list[0];
+      const items = list.map(f => `${f.comp || f.family} (${f.wp}/${HISTORY_WEEKS} uger, ${f.n}× nu)`).join(", ");
+      out.push({ lvl: "crit", html: list.length === 1
+        ? `<b>${esc(f0.ctrl)} – ${esc(faultLabel(f0))}:</b> har været der i <b>${f0.wp} af de ${HISTORY_WEEKS} foregående uger</b> og igen i perioden (${f0.n}×). Fejlen er ikke forsvundet af sig selv.`
+        : `<b>${esc(f0.ctrl)} – ${list.length} ${esc(f0.family.toLowerCase())} der bliver ved med at komme igen:</b> ${esc(items)}. De har været der i mindst 4 af de ${HISTORY_WEEKS} foregående uger og er ikke forsvundet af sig selv.` });
+    }
+    for (const f of active.filter(f => f.status.includes("stigende") && !f.status.includes("vedvarende")).slice(0, 3)) {
+      out.push({ lvl: "warn", html: `<b>${esc(f.ctrl)} – ${esc(faultLabel(f))}:</b> stigende – ${f.n}× i perioden mod normalt ${f.avg.toFixed(1)} pr. uge.` });
+    }
+    for (const f of active.filter(f => f.n >= 3 && f.nightShare >= 0.75).slice(0, 3)) {
+      out.push({ lvl: "", html: `<b>${esc(f.ctrl)} – ${esc(faultLabel(f))}:</b> ${Math.round(f.nightShare * 100)} % af hændelserne sker om natten (22–06).` });
+    }
+    if (gone.length) out.push({ lvl: "", html: `${gone.length} fejl, som var der i flere af de foregående uger, er <b>ikke set i perioden</b> (muligvis udbedret) – se listen nederst.` });
+    if (hist.length) {
+      const pct = cur.length && cur.length * 7 / periodDays;
+      out.push({ lvl: "", html: `Perioden har ${cur.length} hændelser (${(cur.length * 7 / periodDays).toFixed(0)} pr. uge) mod gennemsnitligt ${baselinePerWeek.toFixed(1)} pr. uge de ${HISTORY_WEEKS} foregående uger.` });
+    } else {
+      out.push({ lvl: "", html: `Der er ingen hændelser i de ${HISTORY_WEEKS} foregående uger, så der kan ikke sammenlignes bagud.` });
+    }
+    return out;
+  }
+}
+
+/* --------------------------- RENDER --------------------------- */
+function spark(weeks, now) {
+  const vals = [...weeks].reverse().concat([now]);
+  const mx = Math.max(1, ...vals);
+  return `<span class="spark" title="Uge for uge, ældste → periode: ${vals.join(" / ")}">` +
+    vals.map((v, i) => `<span class="${i === vals.length - 1 ? "cur" : v ? "" : "z"}" style="height:${v ? Math.max(3, v / mx * 20) : 2}px"></span>`).join("") + "</span>";
+}
+
+function weeklyChart(weekly) {
+  const W = 760, H = 190, L = 30, B = 30, T = 16, n = weekly.length, ih = H - B - T, cw = (W - L) / n, bw = cw * 0.6;
+  const mx = Math.max(5, ...weekly.map(w => w.count));
+  const top = mx <= 10 ? Math.ceil(mx / 2) * 2 : Math.ceil(mx / 10) * 10;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Hændelser pr. uge">`;
+  for (const v of [0, top / 2, top]) { const y = T + ih - v / top * ih; s += `<line x1="${L}" x2="${W}" y1="${y}" y2="${y}" stroke="#e2e6ea"/><text x="${L - 6}" y="${y + 4}" font-size="11" fill="#79838d" text-anchor="end">${v}</text>`; }
+  weekly.forEach((w, i) => {
+    const x = L + i * cw + (cw - bw) / 2, cx = L + i * cw + cw / 2, h = w.count / top * ih, y = T + ih - h;
+    if (h > 0) s += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="3" fill="${w.cur ? "#1f4f86" : "#7ea3cf"}"><title>${w.label}: ${w.count}</title></rect>`;
+    s += `<text x="${cx}" y="${y - 4}" font-size="11" fill="#4a545e" text-anchor="middle">${w.count}</text>`;
+    s += `<text x="${cx}" y="${H - B + 16}" font-size="11" fill="#4a545e" text-anchor="middle" ${w.cur ? 'font-weight="700"' : ""}>${w.label}</text>`;
+  });
+  return s + `<line x1="${L}" x2="${W}" y1="${T + ih}" y2="${T + ih}" stroke="#79838d"/></svg>`;
+}
+
+function delta(n, base) {
+  if (!base) return n ? "ingen de foregående uger" : "";
+  const pct = (n - base) / base * 100;
+  const cls = pct > 15 ? "up" : pct < -15 ? "down" : "";
+  return `<span class="${cls}">${pct > 0 ? "▲" : pct < 0 ? "▼" : ""} ${Math.abs(pct).toFixed(0)} %</span> ift. snit ${base.toFixed(1)}/uge`;
+}
+
+function renderReport(r) {
+  const site = state.site, now = new Date();
+  const badge = (s) => `<span class="badge b-${s}">${{ vedvarende: "vedvarende", stigende: "stigende", tilbagevendende: "tilbagevendende", ny: "ny", gentaget: "gentaget", udbedret: "ikke set nu" }[s]}</span>`;
+  const sevTxt = r.sevs.map(s => SEVERITY[s]).join(" + ");
+  let h = `<div class="rep-head"><h2>Fejlrapport – ${esc(site.name)}</h2>
+    <div class="sub">Periode ${fmtDate(r.from)} – ${fmtDate(r.to)} · Alvorlighed: ${esc(sevTxt)} · Sammenlignet med de ${HISTORY_WEEKS} foregående uger · Lavet ${now.toLocaleString("da-DK")}</div></div>`;
+
+  const crit = r.cur.filter(e => e.sev === 4).length;
+  const repeating = r.active.filter(f => f.status.includes("vedvarende") || f.status.includes("tilbagevendende")).length;
+  h += `<div class="tiles">
+    <div class="tile"><div class="k">Hændelser i perioden</div><div class="v">${r.cur.length}</div><div class="d">${delta(r.curPerWeek, r.baselinePerWeek)}</div></div>
+    <div class="tile"><div class="k">Heraf Critical error</div><div class="v">${crit}</div><div class="d">${r.cur.length - crit} Error</div></div>
+    <div class="tile"><div class="k">Forskellige fejl</div><div class="v">${r.active.length}</div><div class="d">på ${r.ctrlList.filter(c => c.n).length} kryds · ${r.incidents.length} samlede hændelsesforløb</div></div>
+    <div class="tile"><div class="k">Fejl der kommer igen</div><div class="v">${repeating}</div><div class="d">set også i tidligere uger</div></div>
+  </div>`;
+
+  h += `<h3>Vigtigste observationer</h3><ul class="insights">${r.insights.map(i => `<li class="${i.lvl}">${i.html}</li>`).join("")}</ul>`;
+
+  h += `<h3>Fejl i perioden – og om de har været der før</h3>
+    <p class="note">Én række = samme fejl på samme kryds (fx samme detektor eller signalgruppe). Søjlerne viser antal pr. uge de ${HISTORY_WEEKS} foregående uger og perioden (mørk).
+    <b>vedvarende</b> = set i mindst 4 af ${HISTORY_WEEKS} uger · <b>tilbagevendende</b> = set 1–3 af ${HISTORY_WEEKS} uger · <b>ny</b> = ikke set i de ${HISTORY_WEEKS} uger · <b>gentaget</b> = flere gange eller flere dage i perioden.</p>
+    <div class="tablewrap"><table><thead><tr><th>Kryds</th><th>Fejl</th><th class="n">Antal</th><th class="n">Dage</th><th>Uge for uge</th><th class="n">Uger før</th><th>Status</th><th>Ekstra info</th><th>Senest</th></tr></thead><tbody>` +
+    r.active.map(f => `<tr><td>${esc(f.ctrl)}</td><td>${f.sev === 4 ? '<span class="sev sev-4">Critical</span> ' : ""}${esc(f.family)}${f.comp ? ` <code>${esc(f.comp)}</code>` : ""}${
+        Object.keys(f.details).length ? `<br><span class="small">${esc(Object.entries(f.details).map(([k, v]) => `${k} ${v}×`).join(", "))}</span>` : ""}${
+        f.withCrit ? `<br><span class="small">${f.withCrit}× sammen med kritisk systemfejl</span>` : ""}</td>
+      <td class="n"><b>${f.n}</b></td><td class="n">${f.days}</td><td>${spark(f.weeks, f.n)}</td><td class="n">${f.wp}/${HISTORY_WEEKS}</td>
+      <td>${f.status.map(badge).join("")}</td><td class="small">${esc(Object.entries(f.extras).map(([k, v]) => `${k} (${v})`).join(", "))}</td><td>${esc(fmtDT(f.last))}</td></tr>`).join("") +
+    `</tbody></table></div>`;
+
+  const multi = r.patternList.filter(p => p.list.some(i => i.events.length >= 2));
+  if (multi.length) {
+    h += `<h3>Fejl der kommer sammen</h3>
+      <p class="note">Hændelser på samme kryds inden for ${INCIDENT_GAP_S} sekunder er samlet til ét forløb. Det viser, hvilke fejl der kommer sammen (fx en lampefejl der udløser en kritisk systemfejl).</p>
+      <div class="tablewrap"><table><thead><tr><th>Kryds</th><th>Forløb</th><th class="n">Gange</th><th>Tidspunkter</th></tr></thead><tbody>` +
+      multi.map(p => `<tr><td>${esc(p.ctrl)}</td><td>${esc(p.signature)}${p.list[0].detectors.length > 1 ? `<br><span class="small">${esc(p.list[0].detectors.join(", "))}</span>` : ""}</td><td class="n"><b>${p.list.length}</b></td>
+        <td class="small">${esc(p.list.map(i => fmtDT(i.start)).join(" · "))}</td></tr>`).join("") + `</tbody></table></div>`;
+  }
+
+  h += `<h3>Udvikling uge for uge</h3>${weeklyChart(r.weekly)}
+    <p class="small">Ugerne er de ${HISTORY_WEEKS} hele uger før periodens start (dato = ugens første dag).${r.periodDays !== 7 ? ` Perioden er ${r.periodDays} dage.` : ""}</p>`;
+
+  h += `<h3>Pr. kryds</h3><div class="tablewrap"><table><thead><tr><th>Kryds</th><th class="n">I perioden</th><th class="n">Critical</th><th class="n">Error</th><th class="n">Forløb</th><th class="n">Snit/uge før</th></tr></thead><tbody>` +
+    r.ctrlList.filter(c => c.n > 0 || c.avg >= 0.5).map(c => `<tr><td>${esc(c.name)}</td><td class="n"><b>${c.n}</b></td><td class="n">${c.crit}</td><td class="n">${c.err}</td><td class="n">${c.incidents}</td><td class="n">${c.avg.toFixed(1)}</td></tr>`).join("") +
+    `</tbody></table></div>`;
+
+  if (r.gone.length) {
+    h += `<h3>Fejl der ikke er set i perioden</h3><p class="note">Var der i mindst 2 af de ${HISTORY_WEEKS} foregående uger, men ikke i perioden – muligvis udbedret.</p>
+      <div class="tablewrap"><table><thead><tr><th>Kryds</th><th>Fejl</th><th>Uge for uge</th><th class="n">Uger før</th></tr></thead><tbody>` +
+      r.gone.map(f => `<tr><td>${esc(f.ctrl)}</td><td>${esc(faultLabel(f))}</td><td>${spark(f.weeks, 0)}</td><td class="n">${f.wp}/${HISTORY_WEEKS}</td></tr>`).join("") + `</tbody></table></div>`;
+  }
+
+  h += `<h3>Alle hændelser i perioden</h3><details><summary class="noprint">Vis ${r.cur.length} hændelser</summary><div class="tablewrap"><table>
+    <thead><tr><th>Tidspunkt</th><th>Kryds</th><th>Alvorlighed</th><th>Besked</th><th>Ekstra info</th></tr></thead><tbody>` +
+    [...r.cur].reverse().map(e => `<tr><td>${esc(new Date(e.t).toLocaleString("da-DK"))}</td><td>${esc(e.ctrl)}</td><td><span class="sev sev-${e.sev}">${esc(SEVERITY[e.sev] || e.sev)}</span></td>
+      <td>${esc(e.msg)} <span class="small">${esc(e.rawCode)}</span></td><td class="small">${esc(e.extra.join(", "))}</td></tr>`).join("") + `</tbody></table></div></details>`;
+
+  $("report").innerHTML = h;
   $("result").classList.remove("hidden");
 }
 
@@ -348,6 +611,7 @@ function downloadJson() {
   $("query-form").addEventListener("submit", fetchEvents);
   $("logout-btn").addEventListener("click", logout);
   $("dl-json").addEventListener("click", downloadJson);
+  $("print-btn").addEventListener("click", () => window.print());
 
   try {  // stay logged in when the page is reloaded (same tab, key is valid for ~1 hour)
     const s = JSON.parse(sessionStorage.getItem("edaptiva-session") || "null");
