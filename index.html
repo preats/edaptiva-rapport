@@ -176,7 +176,7 @@ table.tlc-list tr[data-tlc]{cursor:pointer}table.tlc-list tr.hl td{background:#e
     </div>
   </section>
 
-  <details class="diag"><summary data-i18n="diag"></summary><pre id="diag"></pre></details>
+  <details class="diag"><summary><span data-i18n="diag"></span> · <span id="version"></span></summary><pre id="diag"></pre></details>
 </div>
 <script>
 "use strict";
@@ -279,7 +279,7 @@ const I18N = {
     extra: { parasite: "parasitspænding", inactivity: "inaktivitet" }, unknown: "(ukendt)",
     weeksWord: "uger", nowWord: "nu",
     // observations (functions get already-escaped html)
-    insFlap: (n, pct, list, F) => `<b>${n} ${n === 1 ? "fejl er" : "fejl er"} periodisk${n === 1 ? "" : "e"}</b> (mere end ${F} gange pr. døgn) og står for <b>${pct} af alle hændelser</b> i perioden: ${list}. En periodisk fejl skifter typisk mellem fejl og OK hele tiden – den skal udbedres på stedet, og indtil da drukner andre fejl i støjen.`,
+    insFlap: (n, pct, list, F) => `<b>${n} periodisk${n === 1 ? "" : "e"} fejl</b> (mere end ${F} gange pr. døgn) står for <b>${pct} af alle hændelser</b> i perioden: ${list}. En periodisk fejl skifter typisk mellem fejl og OK hele tiden – den skal udbedres på stedet, og indtil da drukner andre fejl i støjen.`,
     insPattern: (ctrl, sig, n, days) => `<b>${ctrl}:</b> ${sig} gentog sig <b>${n} gange</b> (${days}).`,
     insExtra: (x) => ` Ekstra info: ${x}.`,
     insCritFollow: " Kritisk systemfejl kommer i samme sekund som den anden fejl – sandsynligvis en følgefejl, så det er én fejl at udbedre, ikke to.",
@@ -383,7 +383,7 @@ const I18N = {
     signalGroup: "Signal group {g}", color: { red: "red", yellow: "yellow", green: "green" },
     extra: { parasite: "parasite voltage", inactivity: "inactivity" }, unknown: "(unknown)",
     weeksWord: "weeks", nowWord: "now",
-    insFlap: (n, pct, list, F) => `<b>${n} ${n === 1 ? "fault is" : "faults are"} recurring</b> (more than ${F} times per day) and ${n === 1 ? "accounts" : "account"} for <b>${pct} of all events</b> in the period: ${list}. A recurring fault typically switches between fault and OK all the time – it needs to be fixed on site, and until then other faults get lost in the noise.`,
+    insFlap: (n, pct, list, F) => `<b>${n} recurring fault${n === 1 ? "" : "s"}</b> (more than ${F} times per day) ${n === 1 ? "accounts" : "account"} for <b>${pct} of all events</b> in the period: ${list}. A recurring fault typically switches between fault and OK all the time – it needs to be fixed on site, and until then other faults get lost in the noise.`,
     insPattern: (ctrl, sig, n, days) => `<b>${ctrl}:</b> ${sig} repeated <b>${n} times</b> (${days}).`,
     insExtra: (x) => ` Extra info: ${x}.`,
     insCritFollow: " The critical system error occurs in the same second as the other fault – most likely a consequence of it, so it is one fault to fix, not two.",
@@ -605,6 +605,7 @@ const SITES = [
   { id: "esbjerg", name: { da: "Esbjerg Kommune", en: "Esbjerg Municipality" }, host: "https://esbjerg-edaptiva.cross.cz", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71" },
   { id: "verdo", name: { da: "Verdo – generel (vælg område)", en: "Verdo – general (choose area)" }, short: "Verdo", host: "https://verdo.edaptiva.cloud", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71", areas: true },
 ];
+const APP_VERSION = "9 · 26.11.2026";
 const SEVERITY = { 3: "Error", 4: "Critical error" };
 const PAGE_SIZE = 1000, MAX_PAGES = 300;
 const PARALLEL = 3;             // simultaneous requests to eDaptiva
@@ -1443,7 +1444,8 @@ function downloadJson() {
     const site = s && SITES.find(x => x.id === s.site);
     if (site) { Object.assign(state, { site, token: s.token, deviceId: s.deviceId, user: s.user }); showApp(); }
   } catch (e) {}
-  log("Page ready. Instances:", SITES.map(s => s.id).join(", "));
+  $("version").textContent = "Version " + APP_VERSION;
+  log("Page ready. Version", APP_VERSION, "· Instances:", SITES.map(s => s.id).join(", "));
 })();
 </script>
 </body>
