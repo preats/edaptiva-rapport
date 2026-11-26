@@ -134,7 +134,8 @@ code{font-size:13px}
 
     <div id="result" class="card report hidden">
       <div class="noprint actions">
-        <button type="button" id="print-btn" data-i18n="print"></button>
+        <button type="button" id="mail-btn" data-i18n="email"></button>
+        <button type="button" id="print-btn" class="secondary" data-i18n="print"></button>
         <button class="secondary" id="dl-json" type="button" data-i18n="json"></button>
       </div>
       <div id="report"></div>
@@ -157,7 +158,11 @@ const I18N = {
     instance: "Kommune / instans", username: "Brugernavn", password: "Adgangskode",
     twofa: "Engangskode (2-faktor)", loginBtn: "Log ind", savedLogin: "Brug gemt login…",
     logout: "Log ud", area: "Område", from: "Fra dato", to: "Til dato (inkl.)", severity: "Alvorlighed",
-    fetchBtn: "Lav rapport", print: "Udskriv / gem som PDF", json: "Download data (JSON)",
+    fetchBtn: "Lav rapport", print: "Udskriv / gem som PDF", json: "Download data (JSON)", email: "Send på e-mail",
+    emailSaved: "Rapporten er gemt som filen \u201c{f}\u201d (i din Overførsler-mappe). Vedhæft den i den e-mail, der er åbnet.",
+    mailSubject: "Fejlrapport – {name} – {p}",
+    mailIntro: "Hej\n\nHer er fejlrapporten for {name} for perioden {p}. Den fulde rapport er vedhæftet – åbn filen i en browser.",
+    mailFigures: "Nøgletal:", mailObs: "Vigtigste observationer:", mailBye: "Venlig hilsen",
     diag: "Teknisk log (til fejlsøgning)",
     // messages
     loggingIn: "Logger ind…", err2fa: "Forkert engangskode.",
@@ -168,7 +173,7 @@ const I18N = {
     errEmpty: "Tomt svar fra eDaptiva.",
     errCors: "Kunne ikke kontakte eDaptiva fra denne side. Enten er der ingen forbindelse, eller eDaptiva blokerer adgang fra denne adresse (CORS). Se teknisk log nederst.",
     sessionExpired: "Din session er udløbet – log ind igen.",
-    loadingAreas: "Henter områder…", areasFailed: "Kunne ikke hente områder", crossingsN: "{n} kryds",
+    loadingAreas: "Henter områder…", areasFailed: "Kunne ikke hente områder", crossingsN: "{n} signalanlæg",
     errSev: "Vælg mindst én alvorlighed.", errDates: "Fra-dato skal være før til-dato.",
     errAreasNotLoaded: "Områderne er ikke hentet endnu – vent et øjeblik eller log ind igen.", errChooseArea: "Vælg et område.",
     progress: "Henter {what}: periode + {w} ugers historik… {n} hændelser ({d}/{c} dele færdige)", data: "data",
@@ -180,24 +185,24 @@ const I18N = {
     repTitle: "Fejlrapport – {name}", subPeriod: "Periode {a} – {b}", subSev: "Alvorlighed: {s}",
     subCompared: "Sammenlignet med de {w} foregående uger", subMade: "Lavet {d}",
     tEvents: "Hændelser i perioden", tCrit: "Heraf Critical error", tCritSub: "{n} Error",
-    tNoFault: "Kryds uden fejl", tNoFaultV: "{a} af {b}", inPeriod: "i perioden",
-    tFaults: "Forskellige fejl", tFaultsSub: "på {c} kryds · {i} samlede hændelsesforløb",
+    tNoFault: "Signalanlæg uden fejl", tNoFaultV: "{a} af {b}", inPeriod: "i perioden",
+    tFaults: "Forskellige fejl", tFaultsSub: "på {c} signalanlæg · {i} samlede hændelsesforløb",
     tRepeat: "Fejl der kommer igen", tRepeatSub: "set også i tidligere uger",
     noPrev: "ingen de foregående uger", vsAvg: "ift. snit {b}/uge",
     // report – sections
     hInsights: "Vigtigste observationer",
     hFaults: "Fejl i perioden – og om de har været der før",
-    faultsNote: "Én række = samme fejl på samme kryds (fx samme detektor eller signalgruppe). Søjlerne viser antal pr. uge de {w} foregående uger og perioden (mørk).",
+    faultsNote: "Én række = samme fejl på samme signalanlæg (fx samme detektor eller signalgruppe). Søjlerne viser antal pr. uge de {w} foregående uger og perioden (mørk).",
     defFlap: "mere end {n} gange pr. døgn", defPersist: "set i mindst {p} af {w} uger", defRecur: "set 1–{p1} af {w} uger",
     defNew: "ikke set i de {w} uger", defRepeat: "flere gange eller flere dage i perioden",
-    thCrossing: "Kryds", thFault: "Fejl", thCount: "Antal", thDays: "Dage", thWeekly: "Uge for uge", thWeeksBefore: "Uger før",
+    thCrossing: "Signalanlæg", thFault: "Fejl", thCount: "Antal", thDays: "Dage", thWeekly: "Uge for uge", thWeeksBefore: "Uger før",
     thStatus: "Status", thExtra: "Ekstra info", thLast: "Senest", withCrit: "{n}× sammen med kritisk systemfejl",
     hTogether: "Fejl der kommer sammen",
-    togetherNote: "Hændelser på samme kryds inden for {s} sekunder er samlet til ét forløb. Det viser, hvilke fejl der kommer sammen (fx en lampefejl der udløser en kritisk systemfejl).",
+    togetherNote: "Hændelser på samme signalanlæg inden for {s} sekunder er samlet til ét forløb. Det viser, hvilke fejl der kommer sammen (fx en lampefejl der udløser en kritisk systemfejl).",
     thSequence: "Forløb", thTimes: "Gange", thWhen: "Tidspunkter",
     hWeekly: "Udvikling uge for uge", weeklyNote: "Ugerne er de {w} hele uger før periodens start (dato = ugens første dag).",
     periodDaysNote: " Perioden er {n} dage.", periodLbl: "Periode", chartAria: "Hændelser pr. uge",
-    hPerCrossing: "Pr. kryds", thInPeriod: "I perioden", thIncidents: "Forløb", thAvgBefore: "Snit/uge før",
+    hPerCrossing: "Pr. signalanlæg", thInPeriod: "I perioden", thIncidents: "Forløb", thAvgBefore: "Snit/uge før",
     hGone: "Fejl der ikke er set i perioden", goneNote: "Var der i mindst 2 af de {w} foregående uger, men ikke i perioden – muligvis udbedret.",
     hAll: "Alle hændelser i perioden", showN: "Vis {n} hændelser", showLatest: "Vis de seneste {m} af {n} hændelser",
     thTime: "Tidspunkt", thSeverity: "Alvorlighed", thMessage: "Besked",
@@ -236,7 +241,11 @@ const I18N = {
     instance: "Municipality / instance", username: "Username", password: "Password",
     twofa: "One-time code (2-factor)", loginBtn: "Log in", savedLogin: "Use saved login…",
     logout: "Log out", area: "Area", from: "From date", to: "To date (incl.)", severity: "Severity",
-    fetchBtn: "Create report", print: "Print / save as PDF", json: "Download data (JSON)",
+    fetchBtn: "Create report", print: "Print / save as PDF", json: "Download data (JSON)", email: "Send by email",
+    emailSaved: "The report has been saved as \u201c{f}\u201d (in your Downloads folder). Attach it to the email that has opened.",
+    mailSubject: "Fault report – {name} – {p}",
+    mailIntro: "Hi\n\nHere is the fault report for {name} for the period {p}. The full report is attached – open the file in a browser.",
+    mailFigures: "Key figures:", mailObs: "Key observations:", mailBye: "Best regards",
     diag: "Technical log (for troubleshooting)",
     loggingIn: "Logging in…", err2fa: "Wrong one-time code.",
     errTime: "Login rejected – eDaptiva reports a time problem (check that the PC clock is correct).",
@@ -246,7 +255,7 @@ const I18N = {
     errEmpty: "Empty response from eDaptiva.",
     errCors: "Could not contact eDaptiva from this page. Either there is no connection, or eDaptiva blocks access from this address (CORS). See the technical log at the bottom.",
     sessionExpired: "Your session has expired – please log in again.",
-    loadingAreas: "Loading areas…", areasFailed: "Could not load areas", crossingsN: "{n} crossings",
+    loadingAreas: "Loading areas…", areasFailed: "Could not load areas", crossingsN: (v) => `${v.n} Traffic Light Controller${v.n == 1 ? "" : "s"}`,
     errSev: "Choose at least one severity.", errDates: "The from date must be before the to date.",
     errAreasNotLoaded: "The areas have not been loaded yet – wait a moment or log in again.", errChooseArea: "Choose an area.",
     progress: "Fetching {what}: period + {w} weeks of history… {n} events ({d}/{c} parts done)", data: "data",
@@ -257,23 +266,23 @@ const I18N = {
     repTitle: "Fault report – {name}", subPeriod: "Period {a} – {b}", subSev: "Severity: {s}",
     subCompared: "Compared with the previous {w} weeks", subMade: "Created {d}",
     tEvents: "Events in the period", tCrit: "Of which Critical error", tCritSub: "{n} Error",
-    tNoFault: "Crossings without faults", tNoFaultV: "{a} of {b}", inPeriod: "in the period",
-    tFaults: "Different faults", tFaultsSub: (v) => `on ${v.c} crossing${v.c == 1 ? "" : "s"} · ${v.i} grouped incident${v.i == 1 ? "" : "s"}`,
+    tNoFault: "Traffic Light Controllers without faults", tNoFaultV: "{a} of {b}", inPeriod: "in the period",
+    tFaults: "Different faults", tFaultsSub: (v) => `on ${v.c} traffic light controller${v.c == 1 ? "" : "s"} · ${v.i} grouped incident${v.i == 1 ? "" : "s"}`,
     tRepeat: "Faults that come back", tRepeatSub: "also seen in earlier weeks",
     noPrev: "none in the previous weeks", vsAvg: "vs. avg. {b}/week",
     hInsights: "Key observations",
     hFaults: "Faults in the period – and whether they were there before",
-    faultsNote: "One row = the same fault on the same crossing (e.g. the same detector or signal group). The bars show the count per week for the previous {w} weeks and the period (dark).",
+    faultsNote: "One row = the same fault on the same traffic light controller (e.g. the same detector or signal group). The bars show the count per week for the previous {w} weeks and the period (dark).",
     defFlap: "more than {n} times per day", defPersist: "seen in at least {p} of {w} weeks", defRecur: "seen in 1–{p1} of {w} weeks",
     defNew: "not seen in the {w} weeks", defRepeat: "several times or on several days in the period",
-    thCrossing: "Crossing", thFault: "Fault", thCount: "Count", thDays: "Days", thWeekly: "Week by week", thWeeksBefore: "Weeks before",
+    thCrossing: "Traffic Light Controller", thFault: "Fault", thCount: "Count", thDays: "Days", thWeekly: "Week by week", thWeeksBefore: "Weeks before",
     thStatus: "Status", thExtra: "Extra info", thLast: "Latest", withCrit: "{n}× together with critical system error",
     hTogether: "Faults that occur together",
-    togetherNote: "Events on the same crossing within {s} seconds are grouped into one incident. This shows which faults occur together (e.g. a lamp failure that triggers a critical system error).",
+    togetherNote: "Events on the same traffic light controller within {s} seconds are grouped into one incident. This shows which faults occur together (e.g. a lamp failure that triggers a critical system error).",
     thSequence: "Incident", thTimes: "Times", thWhen: "When",
     hWeekly: "Week-by-week trend", weeklyNote: "The weeks are the {w} full weeks before the start of the period (date = first day of the week).",
     periodDaysNote: " The period is {n} days.", periodLbl: "Period", chartAria: "Events per week",
-    hPerCrossing: "Per crossing", thInPeriod: "In period", thIncidents: "Incidents", thAvgBefore: "Avg/week before",
+    hPerCrossing: "Per Traffic Light Controller", thInPeriod: "In period", thIncidents: "Incidents", thAvgBefore: "Avg/week before",
     hGone: "Faults not seen in the period", goneNote: "Present in at least 2 of the previous {w} weeks, but not in the period – possibly fixed.",
     hAll: "All events in the period", showN: "Show {n} events", showLatest: "Show the latest {m} of {n} events",
     thTime: "Time", thSeverity: "Severity", thMessage: "Message",
@@ -312,6 +321,7 @@ const I18N = {
 ---------------------------------------------------------------- */
 const SITES = [
   { id: "favrskov", name: { da: "Favrskov Kommune", en: "Favrskov Municipality" }, host: "https://favrskov.edaptiva.cloud", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71" },
+  { id: "esbjerg", name: { da: "Esbjerg Kommune", en: "Esbjerg Municipality" }, host: "https://esbjerg-edaptiva.cross.cz", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71" },
   { id: "verdo", name: { da: "Verdo – generel (vælg område)", en: "Verdo – general (choose area)" }, short: "Verdo", host: "https://verdo.edaptiva.cloud", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71", areas: true },
 ];
 const SEVERITY = { 3: "Error", 4: "Critical error" };
@@ -891,6 +901,42 @@ function renderReport(r) {
   $("result").classList.remove("hidden");
 }
 
+/* ---- e-mail: save the report as a self-contained HTML file and open the mail program ---- */
+function plain(html) { const d = document.createElement("div"); d.innerHTML = html; return d.textContent.replace(/\s+/g, " ").trim(); }
+function saveFile(name, content, type) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function openMail(url) { location.href = url; }
+function emailReport() {
+  const r = state.report; if (!r) return;
+  const name = r.area || siteName(r.site);
+  const period = `${fmtDate(r.from)}–${fmtDate(r.to)}`;
+  const css = document.querySelector("style").textContent;
+  const title = t("repTitle", { name }) + " " + period;
+  const fileName = `${(LANG === "da" ? "Fejlrapport" : "Fault-report")}_${name.replace(/[^\wæøåÆØÅ-]+/g, "-")}_${r.from}_${r.to}.html`;
+  const html = `<!doctype html><html lang="${L().htmlLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">` +
+    `<title>${esc(title)}</title><style>${css}</style></head><body><div class="wrap"><div class="card report">${$("report").innerHTML}</div></div></body></html>`;
+  saveFile(fileName, html, "text/html;charset=utf-8");
+
+  const crit = r.cur.filter(e => e.sev === 4).length;
+  const withFaults = r.ctrlList.filter(c => c.n).length;
+  const figures = [
+    `• ${t("tEvents")}: ${num(r.cur.length)} (${plain(delta(r.curPerWeek, r.baselinePerWeek))})`,
+    `• ${t("tCrit")}: ${num(crit)}`,
+    r.crossingsTotal ? `• ${t("tNoFault")}: ${t("tNoFaultV", { a: r.crossingsTotal - withFaults, b: r.crossingsTotal })}` : null,
+    `• ${t("tFaults")}: ${num(r.active.length)}`,
+  ].filter(Boolean);
+  const obs = insights(r).slice(0, 4).map(i => { const s = plain(i.html); return "• " + (s.length > 340 ? s.slice(0, 337) + "…" : s); });
+  const body = [t("mailIntro", { name, p: period }), "", t("mailFigures"), ...figures, "", t("mailObs"), ...obs, "", t("mailBye")].join("\n");
+  const subject = t("mailSubject", { name, p: period });
+  msg($("fetch-msg"), "ok", t("emailSaved", { f: fileName }));
+  setTimeout(() => openMail(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`), 400);
+  log("Report saved as", fileName, "and mail program opened");
+}
+
 function downloadJson() {
   if (!state.data) return;
   const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: "application/json" });
@@ -916,6 +962,7 @@ function downloadJson() {
   $("logout-btn").addEventListener("click", logout);
   $("dl-json").addEventListener("click", downloadJson);
   $("print-btn").addEventListener("click", () => window.print());
+  $("mail-btn").addEventListener("click", emailReport);
   for (const b of document.querySelectorAll(".lang button")) b.addEventListener("click", () => setLang(b.dataset.lang));
   if (credSupported()) { $("saved-btn").classList.remove("hidden"); $("saved-btn").addEventListener("click", useSavedLogin); }
 
