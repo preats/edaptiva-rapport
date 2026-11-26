@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>eDaptiva fejlrapport</title>
+<style>
+:root{--ink:#1d2329;--ink2:#4a545e;--muted:#79838d;--line:#e2e6ea;--bg:#f4f6f8;--card:#fff;--accent:#00a37a;--accent-ink:#fff;
+--err:#b42318;--err-bg:#fdecea;--ok:#1e7a46;--ok-bg:#e5f4ea;--crit:#b42318;--crit-bg:#fdecea;--warn:#8a6100;--warn-bg:#fdf6d8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Arial,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+header.top h1{margin:0;font-size:22px}
+header.top .who{color:var(--ink2);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px;margin-bottom:16px}
+.login{max-width:400px;margin:40px auto}
+.login h2{margin:0 0 4px;font-size:20px}
+.login p.sub{margin:0 0 18px;color:var(--ink2);font-size:14px}
+label{display:block;font-size:13px;color:var(--ink2);margin:12px 0 4px}
+input[type=text],input[type=password],input[type=date],select{width:100%;padding:9px 11px;border:1px solid #c9d0d6;border-radius:7px;font:inherit;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+button{font:inherit;border:0;border-radius:7px;padding:10px 18px;cursor:pointer;background:var(--accent);color:var(--accent-ink);font-weight:600}
+button.secondary{background:#e9edf0;color:var(--ink)}
+button:disabled{opacity:.55;cursor:default}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.row>div{flex:1 1 170px}
+.checks{display:flex;gap:18px;padding:8px 0}
+.checks label{display:flex;align-items:center;gap:6px;margin:0;color:var(--ink);font-size:15px}
+.msg{padding:10px 12px;border-radius:7px;font-size:14px;margin-top:14px;display:none}
+.msg.err{display:block;background:var(--err-bg);color:var(--err)}
+.msg.ok{display:block;background:var(--ok-bg);color:var(--ok)}
+.msg.info{display:block;background:#eef3f8;color:var(--ink2)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:4px 0 18px}
+.tile{background:var(--bg);border-radius:8px;padding:12px 14px}
+.tile .k{font-size:13px;color:var(--ink2)}.tile .v{font-size:28px;font-weight:650;font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th{text-align:left;color:var(--ink2);font-weight:600;border-bottom:2px solid var(--line);padding:7px 8px;white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:7px 8px;vertical-align:top}
+td.n,th.n{text-align:right}
+.sev{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600;white-space:nowrap}
+.sev-4{color:var(--crit);background:var(--crit-bg)}.sev-3{color:var(--warn);background:var(--warn-bg)}
+.small{font-size:12px;color:var(--muted)}
+h3{margin:22px 0 8px;font-size:16px}
+details.diag{margin-top:28px;font-size:13px;color:var(--ink2)}
+details.diag pre{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px;max-height:300px;overflow:auto}
+.hidden{display:none!important}
+@media (max-width:600px){.card{padding:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== LOGIN ===================== -->
+  <section id="view-login" class="card login">
+    <h2>eDaptiva fejlrapport</h2>
+    <p class="sub">Log ind med dit eDaptiva-login.</p>
+    <form id="login-form" autocomplete="on">
+      <label for="site">Kommune</label>
+      <select id="site" name="site"></select>
+      <label for="username">Brugernavn</label>
+      <input id="username" name="username" type="text" autocomplete="username" required>
+      <label for="password">Adgangskode</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <div id="twofa-box" class="hidden">
+        <label for="twofa">Engangskode (2-faktor)</label>
+        <input id="twofa" name="twofa" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
+      </div>
+      <div style="margin-top:18px"><button id="login-btn" type="submit">Log ind</button></div>
+      <div id="login-msg" class="msg"></div>
+    </form>
+  </section>
+
+  <!-- ===================== APP ===================== -->
+  <section id="view-app" class="hidden">
+    <header class="top">
+      <h1>eDaptiva fejlrapport</h1>
+      <div class="who"><span id="who"></span> &nbsp;<button class="secondary" id="logout-btn" type="button">Log ud</button></div>
+    </header>
+
+    <div class="card">
+      <form id="query-form">
+        <div class="row">
+          <div><label for="from">Fra dato</label><input id="from" type="date" required></div>
+          <div><label for="to">Til dato (inkl.)</label><input id="to" type="date" required></div>
+          <div>
+            <label>Alvorlighed</label>
+            <div class="checks">
+              <label><input type="checkbox" id="sev-4" checked> Critical error</label>
+              <label><input type="checkbox" id="sev-3" checked> Error</label>
+            </div>
+          </div>
+          <div style="flex:0 0 auto"><button id="fetch-btn" type="submit">Hent hændelser</button></div>
+        </div>
+        <div id="fetch-msg" class="msg"></div>
+      </form>
+    </div>
+
+    <div id="result" class="card hidden">
+      <div class="tiles" id="tiles"></div>
+      <h3>Pr. kryds</h3>
+      <div class="tablewrap"><table id="by-ctrl"></table></div>
+      <h3>Alle hændelser</h3>
+      <div class="tablewrap"><table id="events"></table></div>
+      <p style="margin-top:16px"><button class="secondary" id="dl-json" type="button">Download data (JSON)</button>
+        <span class="small">– til udvikling af selve rapporten</span></p>
+    </div>
+  </section>
+
+  <details class="diag"><summary>Teknisk log (til fejlsøgning)</summary><pre id="diag"></pre></details>
+</div>
+
+<script>
+"use strict";
+/* ---------------------------------------------------------------
+   Municipalities. The API id is the GUID segment in eDaptiva's API URL.
+   Add new municipalities here.
+---------------------------------------------------------------- */
+const SITES = [
+  { id: "favrskov", name: "Favrskov Kommune", host: "https://favrskov.edaptiva.cloud", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71" },
+];
+const SEVERITY = { 3: "Error", 4: "Critical error" };
+const PAGE_SIZE = 500, MAX_PAGES = 200;
+
+/* test override: ?host=http://localhost:8766&apiId=test (used only for local testing) */
+(() => {
+  const q = new URLSearchParams(location.search);
+  if (q.get("host")) SITES.unshift({ id: "test", name: "TEST (" + q.get("host") + ")", host: q.get("host"), apiId: q.get("apiId") || "test" });
+})();
+
+const $ = (id) => document.getElementById(id);
+const state = { site: null, token: null, deviceId: null, user: null, data: null };
+
+function log(...a) {
+  const line = new Date().toLocaleTimeString("da-DK") + "  " + a.map(x => typeof x === "string" ? x : JSON.stringify(x)).join(" ");
+  $("diag").textContent += line + "\n";
+  console.log(...a);
+}
+function msg(el, kind, text) { el.className = "msg " + (kind || ""); el.textContent = text || ""; }
+function apiBase(site) { return `${site.host}/${site.apiId}/api/v2.0/`; }
+
+/* A per-browser device id (not secret). eDaptiva ties the login key to it. */
+function deviceId() {
+  let d = null;
+  try { d = localStorage.getItem("edaptiva-device-id"); } catch (e) {}
+  if (!d) {
+    d = "rapport-" + (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
+    try { localStorage.setItem("edaptiva-device-id", d); } catch (e) {}
+  }
+  return d;
+}
+
+/* --------------------------- LOGIN --------------------------- */
+let pending2fa = null;
+
+async function login(ev) {
+  ev.preventDefault();
+  const site = SITES.find(s => s.id === $("site").value);
+  const user = $("username").value.trim(), pw = $("password").value;
+  const btn = $("login-btn"); btn.disabled = true;
+  msg($("login-msg"), "info", "Logger ind…");
+  try {
+    let res;
+    if (pending2fa) {
+      log("POST Account/2FA");
+      res = await fetch(apiBase(site) + "Account/2FA", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Csrf-Token": pending2fa.csrf, "X-2fa-Token": pending2fa.token, "Google-auth": $("twofa").value.trim() },
+      });
+    } else {
+      state.deviceId = deviceId();
+      log("POST Account/Login", { site: site.id, host: site.host });
+      res = await fetch(apiBase(site) + "Account/Login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ LoginName: user, Password: pw, DeviceId: state.deviceId }),
+      });
+    }
+    log("Svar", res.status, res.statusText);
+    if (res.status === 401) {
+      const timeProblem = !!res.headers.get("Www-Authenticate");
+      throw new Error(pending2fa ? "Forkert engangskode." :
+        timeProblem ? "Login afvist – eDaptiva melder et tidsproblem (tjek at PC'ens ur er korrekt)." :
+        "Forkert brugernavn eller adgangskode.");
+    }
+    if (!res.ok) throw new Error(`Uventet svar fra eDaptiva: ${res.status} ${res.statusText}`);
+
+    const twofa = res.headers.get("X-2fa-Token");
+    const text = await res.text();
+    let body = null; try { body = text ? JSON.parse(text) : null; } catch (e) {}
+    const token = body && body.TokenAccess && body.TokenAccess.Value;
+
+    if (!token && twofa) {
+      pending2fa = { token: twofa, csrf: res.headers.get("X-Csrf-Token") };
+      $("twofa-box").classList.remove("hidden"); $("twofa").focus();
+      msg($("login-msg"), "info", "Indtast engangskoden fra din 2-faktor-app.");
+      log("2FA krævet");
+      return;
+    }
+    if (!token) {
+      log("Login-svar uden token. Felter:", body ? Object.keys(body) : "(tomt)");
+      throw new Error(body ? "Login gav intet adgangs-token (måske kræves 2-faktor, som siden endnu ikke kan læse)." : "Tomt svar fra eDaptiva.");
+    }
+
+    state.site = site; state.token = token; state.user = user;
+    try { sessionStorage.setItem("edaptiva-session", JSON.stringify({ site: site.id, token, deviceId: state.deviceId, user })); } catch (e) {}
+    try { localStorage.setItem("edaptiva-last-site", site.id); } catch (e) {}
+    pending2fa = null;
+    log("Logget ind som", user);
+    showApp();
+  } catch (e) {
+    if (e instanceof TypeError) {
+      log("Netværks-/CORS-fejl:", e.message);
+      msg($("login-msg"), "err", "Kunne ikke kontakte eDaptiva fra denne side. Enten er der ingen forbindelse, eller eDaptiva blokerer adgang fra denne adresse (CORS). Se teknisk log nederst.");
+    } else {
+      log("Fejl:", e.message);
+      msg($("login-msg"), "err", e.message);
+    }
+  } finally { btn.disabled = false; }
+}
+
+function logout() {
+  state.token = null; state.data = null;
+  try { sessionStorage.removeItem("edaptiva-session"); } catch (e) {}
+  $("password").value = ""; $("twofa").value = ""; $("twofa-box").classList.add("hidden"); pending2fa = null;
+  $("result").classList.add("hidden");
+  $("view-app").classList.add("hidden"); $("view-login").classList.remove("hidden");
+  msg($("login-msg"), "", "");
+}
+
+function showApp() {
+  $("view-login").classList.add("hidden"); $("view-app").classList.remove("hidden");
+  $("who").textContent = `${state.user} · ${state.site.name}`;
+  $("password").value = "";
+}
+
+/* --------------------------- FETCH --------------------------- */
+/* "2026-11-19" + "00:00:00" -> "2026-11-19T00:00:00+01:00" in the PC's local time (handles summer time) */
+function localIso(dateStr, timeStr) {
+  const d = new Date(`${dateStr}T${timeStr}`);
+  const off = -d.getTimezoneOffset(), sign = off >= 0 ? "+" : "-", a = Math.abs(off);
+  return `${dateStr}T${timeStr}${sign}${String(Math.floor(a / 60)).padStart(2, "0")}:${String(a % 60).padStart(2, "0")}`;
+}
+
+function buildFilter(from, to, sevs, page) {
+  const cond = [];
+  if (sevs.length === 1) cond.push({ Type: "100", Value: String(sevs[0]), Column: "Severity" });
+  else if (sevs.length === 2) cond.push({ Type: "11", Left: { Type: "100", Value: String(sevs[0]), Column: "Severity" }, Right: { Type: "100", Value: String(sevs[1]), Column: "Severity" } });
+  cond.push({ Type: "105", Value: localIso(from, "00:00:00"), Column: "EventStampOn" });
+  cond.push({ Type: "103", Value: localIso(to, "23:59:59"), Column: "EventStampOn" });
+  return { Conditions: cond, Sorting: [{ Column: "EventStampOn", SortingOrder: 1 }], PageSize: PAGE_SIZE, Page: page };
+}
+
+async function apiGet(path) {
+  const res = await fetch(apiBase(state.site) + path, {
+    headers: { "Authorization": "Bearer " + state.token, "X-Device-Id": state.deviceId },
+  });
+  if (res.status === 401) { const e = new Error("SESSION"); e.session = true; throw e; }
+  if (!res.ok) throw new Error(`eDaptiva svarede ${res.status} ${res.statusText}`);
+  return res.json();
+}
+
+async function fetchEvents(ev) {
+  ev.preventDefault();
+  const from = $("from").value, to = $("to").value;
+  const sevs = [4, 3].filter(s => $("sev-" + s).checked);
+  if (!sevs.length) return msg($("fetch-msg"), "err", "Vælg mindst én alvorlighed.");
+  if (from > to) return msg($("fetch-msg"), "err", "Fra-dato skal være før til-dato.");
+  const btn = $("fetch-btn"); btn.disabled = true;
+  const clientId = crypto.randomUUID ? crypto.randomUUID() : "00000000-0000-0000-0000-000000000000";
+  const all = [];
+  try {
+    for (let page = 0; page < MAX_PAGES; page++) {
+      msg($("fetch-msg"), "info", `Henter… (${all.length} hændelser indtil nu)`);
+      const f = buildFilter(from, to, sevs, page);
+      const path = `EventArchive/${clientId}/all?filter=${encodeURIComponent(JSON.stringify(f))}&culture=en-US`;
+      log("GET EventArchive side", page);
+      const rows = await apiGet(path);
+      all.push(...rows);
+      if (rows.length < PAGE_SIZE) break;
+    }
+    state.data = { site: state.site.id, from, to, severities: sevs, fetched: new Date().toISOString(), events: all };
+    log("Hentet", all.length, "hændelser");
+    msg($("fetch-msg"), "ok", `Hentet ${all.length} hændelser fra ${fmtDate(from)} til ${fmtDate(to)}.`);
+    render(all);
+  } catch (e) {
+    if (e.session) { msg($("login-msg"), "err", "Din session er udløbet – log ind igen."); logout(); return; }
+    if (e instanceof TypeError) { log("Netværks-/CORS-fejl:", e.message); msg($("fetch-msg"), "err", "Kunne ikke hente data (netværk eller CORS). Se teknisk log."); }
+    else { log("Fejl:", e.message); msg($("fetch-msg"), "err", e.message); }
+  } finally { btn.disabled = false; }
+}
+
+/* --------------------------- RENDER --------------------------- */
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtDate = (d) => d.split("-").reverse().join(".");
+const fmtTime = (iso) => { const d = new Date(iso); return d.toLocaleString("da-DK", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }); };
+
+function render(events) {
+  const bySev = {}, byCtrl = {};
+  for (const e of events) {
+    bySev[e.Severity] = (bySev[e.Severity] || 0) + 1;
+    const c = (e.ControllerName || "").trim() || "(ukendt)";
+    byCtrl[c] = byCtrl[c] || { n: 0, 3: 0, 4: 0, msgs: {} };
+    byCtrl[c].n++; byCtrl[c][e.Severity] = (byCtrl[c][e.Severity] || 0) + 1;
+    const m = (e.Message || "").replace(/'[^']*'/g, "'…'");
+    byCtrl[c].msgs[m] = (byCtrl[c].msgs[m] || 0) + 1;
+  }
+  $("tiles").innerHTML =
+    `<div class="tile"><div class="k">Hændelser i alt</div><div class="v">${events.length}</div></div>` +
+    `<div class="tile"><div class="k">Critical error</div><div class="v">${bySev[4] || 0}</div></div>` +
+    `<div class="tile"><div class="k">Error</div><div class="v">${bySev[3] || 0}</div></div>` +
+    `<div class="tile"><div class="k">Kryds med hændelser</div><div class="v">${Object.keys(byCtrl).length}</div></div>`;
+
+  const ctrls = Object.entries(byCtrl).sort((a, b) => b[1].n - a[1].n);
+  $("by-ctrl").innerHTML = `<thead><tr><th>Kryds</th><th class="n">I alt</th><th class="n">Critical</th><th class="n">Error</th><th>Typer</th></tr></thead><tbody>` +
+    ctrls.map(([c, v]) => `<tr><td>${esc(c)}</td><td class="n"><b>${v.n}</b></td><td class="n">${v[4] || 0}</td><td class="n">${v[3] || 0}</td><td>${
+      Object.entries(v.msgs).sort((a, b) => b[1] - a[1]).map(([m, n]) => `${esc(m)} (${n})`).join("<br>")}</td></tr>`).join("") + "</tbody>";
+
+  $("events").innerHTML = `<thead><tr><th>Tidspunkt</th><th>Kryds</th><th>Alvorlighed</th><th>Besked</th><th>Kode</th><th>Ekstra info</th></tr></thead><tbody>` +
+    events.map(e => `<tr><td>${esc(fmtTime(e.EventStampOn))}</td><td>${esc((e.ControllerName || "").trim())}</td>` +
+      `<td><span class="sev sev-${e.Severity}">${esc(SEVERITY[e.Severity] || e.Severity)}</span></td><td>${esc(e.Message)}</td>` +
+      `<td class="small">${esc(e.MessageCode)}</td><td class="small">${(e.SecondaryEvents || []).map(s => esc(s.Message)).join("<br>")}</td></tr>`).join("") + "</tbody>";
+  $("result").classList.remove("hidden");
+}
+
+function downloadJson() {
+  if (!state.data) return;
+  const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `edaptiva_${state.data.site}_${state.data.from}_${state.data.to}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* --------------------------- START --------------------------- */
+(function init() {
+  const sel = $("site");
+  let last = null; try { last = localStorage.getItem("edaptiva-last-site"); } catch (e) {}
+  for (const s of SITES) { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; if (s.id === last) o.selected = true; sel.appendChild(o); }
+  if (SITES.length === 1) sel.closest("form").querySelector('label[for=site]').classList.add("hidden"), sel.classList.add("hidden");
+
+  const today = new Date(), wk = new Date(today.getTime() - 7 * 864e5);
+  const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  $("to").value = ymd(new Date(today.getTime() - 864e5)); $("from").value = ymd(wk);
+
+  $("login-form").addEventListener("submit", login);
+  $("query-form").addEventListener("submit", fetchEvents);
+  $("logout-btn").addEventListener("click", logout);
+  $("dl-json").addEventListener("click", downloadJson);
+
+  try {  // stay logged in when the page is reloaded (same tab, key is valid for ~1 hour)
+    const s = JSON.parse(sessionStorage.getItem("edaptiva-session") || "null");
+    const site = s && SITES.find(x => x.id === s.site);
+    if (site) { Object.assign(state, { site, token: s.token, deviceId: s.deviceId, user: s.user }); showApp(); }
+  } catch (e) {}
+  log("Side klar. Kommuner:", SITES.map(s => s.id).join(", "));
+})();
+</script>
+</body>
+</html>
