@@ -215,7 +215,10 @@ const I18N = {
     done: "Rapport lavet: {n} hændelser i perioden {p} (+ {h} i de {w} foregående uger til sammenligning).",
     errFetchCors: "Kunne ikke hente data (netværk eller CORS). Se teknisk log.", eDaptivaSaid: "eDaptiva svarede {s}",
     noSaved: "Ingen gemt login valgt.",
-    checkingComm: "Tjekker kommunikation med {n} signalanlæg…",
+    checkingComm: "Henter forbindelseshændelser for {n} signalanlæg…",
+    checkingCommN: "Tjekker forbindelsesstatus… {d}/{n} signalanlæg",
+    commSkipped: "OBS: Status nu kunne ikke hentes for {n} signalanlæg (eDaptiva svarede for langsomt) – de vises som \u201dukendt\u201d.",
+    errTimeout: "eDaptiva svarede ikke inden for {s} sekunder. Prøv igen, evt. med en kortere periode.",
     tOffline: "Offline lige nu", tOfflineSub: "{n} uden registreret kommunikation",
     hComm: "Kommunikation med signalanlæg",
     commNote: "Bygger på eDaptivas hændelser \u201dCommunication with the controller lost / restored\u201d (alvorlighed Warning/Info – medtages altid). Tabellen viser signalanlæg, der er offline nu, har haft afbrydelser eller ikke har registreret kommunikation.",
@@ -324,7 +327,10 @@ const I18N = {
     done: "Report created: {n} events in the period {p} (+ {h} in the previous {w} weeks for comparison).",
     errFetchCors: "Could not fetch data (network or CORS). See the technical log.", eDaptivaSaid: "eDaptiva responded {s}",
     noSaved: "No saved login selected.",
-    checkingComm: (v) => `Checking communication with ${v.n} traffic light controller${v.n == 1 ? "" : "s"}…`,
+    checkingComm: (v) => `Fetching connection events for ${v.n} traffic light controller${v.n == 1 ? "" : "s"}…`,
+    checkingCommN: "Checking connection status… {d}/{n} traffic light controllers",
+    commSkipped: "NB: The current status could not be fetched for {n} traffic light controllers (eDaptiva answered too slowly) – they are shown as \u201cunknown\u201d.",
+    errTimeout: "eDaptiva did not answer within {s} seconds. Please try again, possibly with a shorter period.",
     tOffline: "Offline right now", tOfflineSub: "{n} with no recorded communication",
     hComm: "Communication with Traffic Light Controllers",
     commNote: "Based on eDaptiva's events \u201cCommunication with the controller lost / restored\u201d (severity Warning/Info – always included). The table shows traffic light controllers that are offline now, have had disconnections or have no recorded communication.",
@@ -605,7 +611,10 @@ const SITES = [
   { id: "esbjerg", name: { da: "Esbjerg Kommune", en: "Esbjerg Municipality" }, host: "https://esbjerg-edaptiva.cross.cz", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71" },
   { id: "verdo", name: { da: "Verdo – generel (vælg område)", en: "Verdo – general (choose area)" }, short: "Verdo", host: "https://verdo.edaptiva.cloud", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71", areas: true },
 ];
-const APP_VERSION = "9 · 26.11.2026";
+const APP_VERSION = "10 · 26.11.2026";
+const API_TIMEOUT_MS = 60000;   // one call to eDaptiva may take at most this long (then 1 retry)
+const COMM_BUDGET_MS = 90000;   // the whole connectivity check may take at most this long
+const STATUS_LOOKBACK_DAYS = 180;  // latest connection status is looked up within this many days
 const SEVERITY = { 3: "Error", 4: "Critical error" };
 const PAGE_SIZE = 1000, MAX_PAGES = 300;
 const PARALLEL = 3;             // simultaneous requests to eDaptiva
@@ -876,11 +885,23 @@ function buildFilter(from, to, sevs, page, uuids) {
   cond.push({ Type: "103", Value: localIso(to, "23:59:59"), Column: "EventStampOn" });
   return { Conditions: cond, Sorting: [{ Column: "EventStampOn", SortingOrder: 1 }], PageSize: PAGE_SIZE, Page: page };
 }
-async function apiGet(path) {
-  const res = await fetch(apiBase(state.site) + path, { headers: { "Authorization": "Bearer " + state.token, "X-Device-Id": state.deviceId } });
-  if (res.status === 401) { const e = new Error("SESSION"); e.session = true; throw e; }
-  if (!res.ok) throw new Error(t("eDaptivaSaid", { s: `${res.status} ${res.statusText}` }));
-  return res.json();
+async function apiGet(path, { timeout = API_TIMEOUT_MS, retries = 1 } = {}) {
+  for (let attempt = 0; ; attempt++) {
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), timeout);
+    try {
+      const res = await fetch(apiBase(state.site) + path, { headers: { "Authorization": "Bearer " + state.token, "X-Device-Id": state.deviceId }, signal: ctl.signal });
+      if (res.status === 401) { const e = new Error("SESSION"); e.session = true; throw e; }
+      if (res.status >= 500 && attempt < retries) { log(`eDaptiva ${res.status} – retrying`); continue; }
+      if (!res.ok) throw new Error(t("eDaptivaSaid", { s: `${res.status} ${res.statusText}` }));
+      return await res.json();
+    } catch (e) {
+      if (e.name === "AbortError") {
+        if (attempt < retries) { log(`No answer from eDaptiva within ${timeout / 1000} s – retrying`); continue; }
+        const err = new Error(t("errTimeout", { s: Math.round(timeout / 1000) })); err.timeout = true; throw err;
+      }
+      throw e;
+    } finally { clearTimeout(timer); }
+  }
 }
 
 async function fetchEvents(ev) {
@@ -921,13 +942,14 @@ async function fetchEvents(ev) {
     progress();
     const queue = [...chunks];
     await Promise.all(Array.from({ length: PARALLEL }, async () => { while (queue.length) await fetchChunk(queue.shift()); }));
-    log(`Fetched ${all.length} events in ${((performance.now() - t0) / 1000).toFixed(1)} s` + (area ? ` (area ${area.name}, ${uuids.length} crossings)` : ""));
+    log(`Fetched ${all.length} fault events in ${((performance.now() - t0) / 1000).toFixed(1)} s` + (area ? ` (area ${area.name}, ${uuids.length} crossings)` : ""));
 
     /* ---- connectivity: connection lost/restored events + latest status per controller ---- */
     let comm = null;
     const scope = state.controllers ? (area ? area.controllerIds.map(id => state.controllers[id]).filter(Boolean) : Object.values(state.controllers)) : [];
     if (scope.length) {
       try {
+        const tc = performance.now();
         msg($("fetch-msg"), "info", t("checkingComm", { n: scope.length }));
         const codeOr = { Type: "11", Left: { Type: "100", Value: COMM_LOST, Column: "MessageCode" }, Right: { Type: "100", Value: COMM_OK, Column: "MessageCode" } };
         const commEvents = [];
@@ -940,14 +962,31 @@ async function fetchEvents(ev) {
             if (rows.length < PAGE_SIZE) break;
           }
         });
-        const latestOf = async (uuid, cond) => (await apiGet(`EventArchive/${clientId}/all?filter=${encodeURIComponent(JSON.stringify({ Conditions: [{ Type: "100", Value: uuid, Column: "ControllerUUID" }, ...cond], Sorting: [{ Column: "EventStampOn", SortingOrder: 1 }], PageSize: 1, Page: 0 }))}&culture=en-US`))[0];
-        const latest = {};
-        await pool(scope, 6, async (c) => {
-          const e = await latestOf(c.uuid, [codeOr]);
-          if (e) latest[c.uuid] = { t: parseT(e.EventStampOn), lost: e.MessageCode === COMM_LOST };
-          else latest[c.uuid] = (await latestOf(c.uuid, [])) ? { none: true } : { never: true };
+        log(`Connectivity: ${commEvents.length} lost/restored events fetched in ${((performance.now() - tc) / 1000).toFixed(1)} s`);
+        // latest status per controller – limited in time so eDaptiva does not search the whole archive
+        const since = { Type: "105", Value: localIso(dayKey(Date.now() - STATUS_LOOKBACK_DAYS * 864e5), "00:00:00"), Column: "EventStampOn" };
+        const latestOf = async (uuid, cond) => (await apiGet(`EventArchive/${clientId}/all?filter=${encodeURIComponent(JSON.stringify({ Conditions: [{ Type: "100", Value: uuid, Column: "ControllerUUID" }, since, ...cond], Sorting: [{ Column: "EventStampOn", SortingOrder: 1 }], PageSize: 1, Page: 0 }))}&culture=en-US`, { timeout: 30000 }))[0];
+        // controllers that already show up in the fetched data are evidently communicating
+        const active = new Set([...all, ...commEvents].map(e => e.ControllerUUID));
+        const latest = {}; let checked = 0, skipped = 0;
+        const deadline = Date.now() + COMM_BUDGET_MS;
+        await pool(scope, 4, async (c) => {
+          if (Date.now() > deadline) { skipped++; latest[c.uuid] = {}; return; }
+          try {
+            const e = await latestOf(c.uuid, [codeOr]);
+            if (e) latest[c.uuid] = { t: parseT(e.EventStampOn), lost: e.MessageCode === COMM_LOST };
+            else if (active.has(c.uuid)) latest[c.uuid] = { none: true };
+            else latest[c.uuid] = (await latestOf(c.uuid, [])) ? { none: true } : { never: true };
+          } catch (err) {
+            if (err.session) throw err;
+            latest[c.uuid] = {}; skipped++; log(`Status for ${c.name}: ${err.message}`);
+          }
+          checked++;
+          msg($("fetch-msg"), "info", t("checkingCommN", { d: checked, n: scope.length }));
         });
         comm = analyseComm(commEvents, latest, scope, from, to);
+        comm.skipped = skipped;
+        log(`Connectivity: status for ${scope.length - skipped}/${scope.length} controllers in ${((performance.now() - tc) / 1000).toFixed(1)} s total`);
         log(`Connectivity: ${commEvents.length} lost/restored events, ${comm.offlineNow.length} offline now, ${comm.never.length} without any events`);
       } catch (e) {
         if (e.session) throw e;
@@ -1243,7 +1282,7 @@ function renderComm(r) {
   if (!c) return "";
   const shown = c.rows.filter(x => x.status !== "online" || x.drops || x.weeks.some(Boolean));
   const okCount = c.total - shown.length;
-  let h = `<h3>${esc(t("hComm"))}</h3><p class="note">${esc(t("commNote"))}</p>`;
+  let h = `<h3>${esc(t("hComm"))}</h3><p class="note">${esc(t("commNote"))}${c.skipped ? " " + esc(t("commSkipped", { n: c.skipped })) : ""}</p>`;
   if (!shown.length) return h + `<p>${esc(t("commAllOk", { n: c.total }))}</p>`;
   const now = Date.now();
   const st = (x) => x.status === "offline" ? `<span class="badge b-offline">${esc(F.cs.offline)}</span><br><span class="small">${esc(F.since)} ${esc(fmtSince(x.since))} (${esc(fmtDur(now - x.since))})</span>`
