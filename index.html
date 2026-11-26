@@ -71,6 +71,39 @@ ul.insights li.crit{border-left-color:var(--crit)}ul.insights li.warn{border-lef
 .spark span.z{background:#e2e6ea}.spark span.cur{background:#1f4f86}
 .note{font-size:13px;color:var(--ink2);background:var(--bg);padding:8px 12px;border-radius:6px;margin:8px 0}
 code{font-size:13px}
+.cat{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px 2px 7px;border-radius:12px;white-space:nowrap}
+.cat svg{flex:none}
+.cat-lamp{color:#8a6200}.cat.cat-lamp{background:#fdf3d6}
+.cat-det{color:#2459a8}.cat.cat-det{background:#e7effa}
+.cat-sys{color:#1d8279}.cat.cat-sys{background:#dff3f2}
+.cat-i{display:inline-flex;vertical-align:-2px;margin-right:5px}
+.catbar{display:flex;height:26px;border-radius:6px;overflow:hidden;margin:4px 0 12px;gap:2px;background:#fff}
+.catbar>div{color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;min-width:4px}
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.catcard{background:var(--bg);border-radius:8px;border-top:4px solid;padding:12px 14px}
+.catcard .v{font-size:28px;font-weight:650;margin-top:6px}.catcard .d{font-size:12px;color:var(--muted)}
+ul.cat-top{list-style:none;margin:8px 0 0;padding:0}ul.cat-top li{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:13px}
+.catfilter{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
+.catfilter button{background:#fff;border:1px solid #c9d0d6;color:var(--ink);padding:5px 10px;font-weight:500;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.catfilter button.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.catfilter button .cat{padding:0;background:none}
+.tlc-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.tlc-legend .cat{margin-right:4px}
+.tlc-top{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px}
+.tlc-map{height:430px;border-radius:8px;border:1px solid var(--line);background:#eef1f4;z-index:0}
+.tlc-nomap{display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink2);font-size:14px;padding:20px;text-align:center}
+.tlc-panel{background:var(--bg);border-radius:8px;padding:14px;min-height:200px;font-size:14px;overflow:auto;max-height:430px}
+.tlc-h{font-weight:650;font-size:16px;margin-bottom:2px}
+.tlc-st{color:var(--ink2);font-size:13px;margin-bottom:10px}
+.tlc-kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tlc-kv>div{background:#fff;border-radius:6px;padding:8px 10px}.tlc-kv .k{font-size:12px;color:var(--ink2)}.tlc-kv .v{font-size:20px;font-weight:650}.tlc-kv .d{font-size:11px;color:var(--muted)}
+ul.tlc-f{list-style:none;margin:4px 0 0;padding:0}ul.tlc-f li{display:flex;gap:8px;align-items:baseline;padding:3px 0;border-bottom:1px solid var(--line);font-size:13px}ul.tlc-f li>span:nth-child(2){flex:1}ul.tlc-f li>.cat-i{flex:none;margin-right:0}
+.tlc-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin:8px 0 4px}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:7px;vertical-align:-1px;border:1px solid rgba(0,0,0,.12)}
+.c-offline{background:#8e3b8e}.c-never{background:#9aa0a6}.c-crit{background:#b42318}.c-err{background:#e07b00}.c-ok{background:#1e7a46}
+table.tlc-list tr[data-tlc]{cursor:pointer}table.tlc-list tr.hl td{background:#e8f1fb}
+@media (max-width:900px){.tlc-top{grid-template-columns:1fr}.tlc-map{height:340px}}
+@media print{.tlc-panel{display:none}.tlc-top{grid-template-columns:1fr}}
 @media print{body{background:#fff;font-size:12px}.wrap{padding:0;max-width:none}.noprint,.topbar,#view-app>header,#view-app>.card:first-of-type,details.diag{display:none!important}
  .card{border:0;padding:0;margin:0}tr,li,.tile{break-inside:avoid}h3{break-after:avoid}}
 @media (max-width:600px){.card{padding:16px}}
@@ -191,6 +224,21 @@ const I18N = {
     thStatusNow: "Status nu", thDrops: "Afbrydelser", thOffTime: "Offline-tid i perioden", thUptime: "Oppetid",
     cs: { online: "online", offline: "offline", never: "ingen kommunikation", unstable: "ustabil forbindelse", unknown: "ukendt" },
     since: "siden", durUnits: { d: "d", h: "t", m: "min" },
+    hMap: "Kort og signalanlæg",
+    cat: { lamp: "Lampefejl", det: "Detektorfejl", sys: "Systemfejl" }, catShort: { lamp: "Lampe", det: "Detektor", sys: "System" },
+    hTypes: "Fejltyper", filterAll: "Alle",
+    typesNote: "Lampefejl = fejl på lamper i signalgrupperne (rød, gul, grøn). Detektorfejl = fejl på detektorer. Systemfejl = alt andet, fx kritisk systemfejl, strømforsyning, ur, omløbsovervågning og busprioritering.",
+    typesShare: "{p} af alle hændelser", typesOn: "{f} forskellige fejl på {n} signalanlæg", typesNone: "Ingen i perioden",
+    weeklyLegend: "Lyse søjler = de foregående uger, mørke = perioden.",
+    mapNote: "Hold musen over et signalanlæg på kortet eller i listen for at se detaljer – klik for at fastholde det. Prikkens størrelse følger antallet af hændelser i perioden.",
+    mapHint: "Hold musen over et signalanlæg på kortet eller i listen for at se detaljer.",
+    mapFailed: "Kortet kunne ikke indlæses (ingen forbindelse til kortserveren). Listen og detaljerne virker stadig.",
+    noPosAll: "Ingen af signalanlæggene har en GPS-position i eDaptiva, så kortet kan ikke vises.",
+    noPosOne: "Signalanlægget har ingen GPS-position i eDaptiva og vises derfor ikke på kortet.",
+    noPosSome: "{n} signalanlæg uden GPS-position vises kun i listen (⌀).",
+    lgCrit: "Critical / periodisk", lgErr: "Fejl", lgOk: "Ingen fejl",
+    pDaily: "Hændelser pr. dag – {w} uger før + perioden (mørk)", pFaults: "Fejl i perioden", pNoFaults: "Ingen fejl i perioden.",
+    pEventsN: "{n} hændelser i perioden", pNoFaultsShort: "ingen fejl i perioden",
     insOffline: (n, list) => `<b>${n} signalanlæg ${n === 1 ? "er" : "er"} offline lige nu:</b> ${list}.`,
     insNever: (n, list) => `<b>${n} signalanlæg har ingen registreret kommunikation</b> i eDaptivas arkiv: ${list}. De er muligvis ikke tilsluttet eller endnu ikke i drift.`,
     insUnstable: (name, n, dur) => `<b>${name}:</b> ustabil forbindelse – mistede forbindelsen ${n} gange i perioden (offline i alt ${dur}).`,
@@ -221,7 +269,7 @@ const I18N = {
     thTime: "Tidspunkt", thSeverity: "Alvorlighed", thMessage: "Besked",
     sparkTitle: "Uge for uge, ældste → periode: {v}",
     // statuses
-    st: { flap: "blinker", persist: "vedvarende", rising: "stigende", recur: "tilbagevendende", new: "ny", repeat: "gentaget", gone: "ikke set nu" },
+    st: { flap: "periodisk", persist: "vedvarende", rising: "stigende", recur: "tilbagevendende", new: "ny", repeat: "gentaget", gone: "ikke set nu" },
     // fault families and details
     fam: { detector: "Detektorfejl", lamp: "Lampefejl", crit: "Kritisk systemfejl", power: "Strømforsyningsfejl",
            timeshift: "Tidsjustering (ur)", cycle: "Omløbsovervågning", pt: "Busprioritering – modtagerfejl" },
@@ -231,7 +279,7 @@ const I18N = {
     extra: { parasite: "parasitspænding", inactivity: "inaktivitet" }, unknown: "(ukendt)",
     weeksWord: "uger", nowWord: "nu",
     // observations (functions get already-escaped html)
-    insFlap: (n, pct, list, F) => `<b>${n} fejl blinker</b> (mere end ${F} gange pr. døgn) og står for <b>${pct} af alle hændelser</b> i perioden: ${list}. En detektor der blinker skifter typisk mellem fejl og OK hele tiden – det skal udbedres på stedet, og indtil da drukner andre fejl i støjen.`,
+    insFlap: (n, pct, list, F) => `<b>${n} ${n === 1 ? "fejl er" : "fejl er"} periodisk${n === 1 ? "" : "e"}</b> (mere end ${F} gange pr. døgn) og står for <b>${pct} af alle hændelser</b> i perioden: ${list}. En periodisk fejl skifter typisk mellem fejl og OK hele tiden – den skal udbedres på stedet, og indtil da drukner andre fejl i støjen.`,
     insPattern: (ctrl, sig, n, days) => `<b>${ctrl}:</b> ${sig} gentog sig <b>${n} gange</b> (${days}).`,
     insExtra: (x) => ` Ekstra info: ${x}.`,
     insCritFollow: " Kritisk systemfejl kommer i samme sekund som den anden fejl – sandsynligvis en følgefejl, så det er én fejl at udbedre, ikke to.",
@@ -285,6 +333,21 @@ const I18N = {
     thStatusNow: "Status now", thDrops: "Disconnections", thOffTime: "Offline time in period", thUptime: "Uptime",
     cs: { online: "online", offline: "offline", never: "no communication", unstable: "unstable connection", unknown: "unknown" },
     since: "since", durUnits: { d: "d", h: "h", m: "min" },
+    hMap: "Map and Traffic Light Controllers",
+    cat: { lamp: "Lamp faults", det: "Detector faults", sys: "System faults" }, catShort: { lamp: "Lamp", det: "Detector", sys: "System" },
+    hTypes: "Fault types", filterAll: "All",
+    typesNote: "Lamp faults = faults on lamps in the signal groups (red, yellow, green). Detector faults = faults on detectors. System faults = everything else, e.g. critical system error, power supply, clock, cycle monitoring and bus priority.",
+    typesShare: "{p} of all events", typesOn: (v) => `${v.f} different fault${v.f == 1 ? "" : "s"} on ${v.n} traffic light controller${v.n == 1 ? "" : "s"}`, typesNone: "None in the period",
+    weeklyLegend: "Light bars = the previous weeks, dark = the period.",
+    mapNote: "Hover over a traffic light controller on the map or in the list to see details – click to pin it. The dot size follows the number of events in the period.",
+    mapHint: "Hover over a traffic light controller on the map or in the list to see details.",
+    mapFailed: "The map could not be loaded (no connection to the map server). The list and details still work.",
+    noPosAll: "None of the traffic light controllers has a GPS position in eDaptiva, so the map cannot be shown.",
+    noPosOne: "This traffic light controller has no GPS position in eDaptiva and is therefore not shown on the map.",
+    noPosSome: "{n} traffic light controllers without a GPS position are only shown in the list (⌀).",
+    lgCrit: "Critical / recurring", lgErr: "Faults", lgOk: "No faults",
+    pDaily: "Events per day – {w} weeks before + the period (dark)", pFaults: "Faults in the period", pNoFaults: "No faults in the period.",
+    pEventsN: "{n} events in the period", pNoFaultsShort: "no faults in the period",
     insOffline: (n, list) => `<b>${n} traffic light controller${n === 1 ? " is" : "s are"} offline right now:</b> ${list}.`,
     insNever: (n, list) => `<b>${n} traffic light controller${n === 1 ? " has" : "s have"} no recorded communication</b> in the eDaptiva archive: ${list}. ${n === 1 ? "It" : "They"} may not be connected or not yet in operation.`,
     insUnstable: (name, n, dur) => `<b>${name}:</b> unstable connection – lost the connection ${n} times in the period (offline ${dur} in total).`,
@@ -312,7 +375,7 @@ const I18N = {
     hAll: "All events in the period", showN: "Show {n} events", showLatest: "Show the latest {m} of {n} events",
     thTime: "Time", thSeverity: "Severity", thMessage: "Message",
     sparkTitle: "Week by week, oldest → period: {v}",
-    st: { flap: "flapping", persist: "persistent", rising: "rising", recur: "recurring", new: "new", repeat: "repeated", gone: "not seen now" },
+    st: { flap: "recurring", persist: "persistent", rising: "rising", recur: "returning", new: "new", repeat: "repeated", gone: "not seen now" },
     fam: { detector: "Detector failure", lamp: "Lamp failure", crit: "Critical system error", power: "Power supply failure",
            timeshift: "Time adjustment (clock)", cycle: "Cycle monitoring", pt: "Bus priority – receiver failure" },
     famPlural: { detector: "detector failures", lamp: "lamp failures", crit: "critical system errors", power: "power supply failures",
@@ -320,7 +383,7 @@ const I18N = {
     signalGroup: "Signal group {g}", color: { red: "red", yellow: "yellow", green: "green" },
     extra: { parasite: "parasite voltage", inactivity: "inactivity" }, unknown: "(unknown)",
     weeksWord: "weeks", nowWord: "now",
-    insFlap: (n, pct, list, F) => `<b>${n} ${n === 1 ? "fault is" : "faults are"} flapping</b> (more than ${F} times per day) and ${n === 1 ? "accounts" : "account"} for <b>${pct} of all events</b> in the period: ${list}. A flapping detector typically switches between fault and OK all the time – it needs to be fixed on site, and until then other faults get lost in the noise.`,
+    insFlap: (n, pct, list, F) => `<b>${n} ${n === 1 ? "fault is" : "faults are"} recurring</b> (more than ${F} times per day) and ${n === 1 ? "accounts" : "account"} for <b>${pct} of all events</b> in the period: ${list}. A recurring fault typically switches between fault and OK all the time – it needs to be fixed on site, and until then other faults get lost in the noise.`,
     insPattern: (ctrl, sig, n, days) => `<b>${ctrl}:</b> ${sig} repeated <b>${n} times</b> (${days}).`,
     insExtra: (x) => ` Extra info: ${x}.`,
     insCritFollow: " The critical system error occurs in the same second as the other fault – most likely a consequence of it, so it is one fault to fix, not two.",
@@ -336,6 +399,199 @@ const I18N = {
     insNoHist: (w) => `There are no events in the previous ${w} weeks, so no comparison back in time is possible.`,
   },
 };
+</script>
+<script>
+"use strict";
+/* ===================================================================
+   INTERACTIVE MAP + LIST
+   mountMap() is self-contained (uses only its arguments and window.L
+   from Leaflet), so the same code can be embedded in the e-mailed file.
+=================================================================== */
+const LEAFLET_CSS = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
+const LEAFLET_JS = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+let leafletPromise = null;
+function loadLeaflet() {
+  if (window.L && window.L.map) return Promise.resolve(true);
+  if (leafletPromise) return leafletPromise;
+  leafletPromise = new Promise((resolve) => {
+    const css = document.createElement("link"); css.rel = "stylesheet"; css.href = LEAFLET_CSS; document.head.appendChild(css);
+    const s = document.createElement("script"); s.src = LEAFLET_JS;
+    s.onload = () => resolve(true); s.onerror = () => { leafletPromise = null; resolve(false); };
+    document.head.appendChild(s);
+  });
+  return leafletPromise;
+}
+
+function mountMap(root, D) {
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const COL = { offline: "#8e3b8e", never: "#9aa0a6", crit: "#b42318", err: "#e07b00", ok: "#1e7a46" };
+  const CC = D.catColor, CATS = ["lamp", "det", "sys"];
+  const panel = root.querySelector(".tlc-panel"), mapEl = root.querySelector(".tlc-map");
+  const rows = [...root.querySelectorAll("[data-tlc]")];
+  const T = D.T;
+  let pinned = null, hovered = null;
+  const markers = {};
+
+  function chart(daily, dc) {
+    const W = 330, H = 120, Lp = 26, B = 22, Tp = 8, n = daily.length, ih = H - B - Tp, cw = (W - Lp) / n;
+    const mx = Math.max(1, ...daily), top = mx <= 4 ? 4 : mx <= 10 ? Math.ceil(mx / 2) * 2 : Math.ceil(mx / 10) * 10;
+    let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(T.daily)}">`;
+    s += `<rect x="${Lp + D.pIdx * cw}" y="${Tp}" width="${(n - D.pIdx) * cw}" height="${ih}" fill="#eef3f8"/>`;
+    for (const v of [0, top]) { const y = Tp + ih - v / top * ih; s += `<line x1="${Lp}" x2="${W}" y1="${y}" y2="${y}" stroke="#e2e6ea"/><text x="${Lp - 4}" y="${y + 4}" font-size="10" fill="#79838d" text-anchor="end">${v.toLocaleString(D.locale)}</text>`; }
+    daily.forEach((v, i) => {
+      const h = v / top * ih, x = Lp + i * cw + cw * 0.15, label = D.dayLabels[i];
+      let yy = Tp + ih;
+      for (const c of CATS) { const hc = dc[c][i] / top * ih; if (hc <= 0) continue; yy -= hc; s += `<rect x="${x}" y="${yy}" width="${cw * 0.7}" height="${hc}" fill="${CC[c]}" fill-opacity="${i >= D.pIdx ? 1 : 0.5}"></rect>`; }
+      s += `<rect x="${Lp + i * cw}" y="${Tp}" width="${cw}" height="${ih}" fill="transparent"><title>${esc(label)}: ${v.toLocaleString(D.locale)} (${CATS.map(c => `${T.cat[c]} ${dc[c][i]}`).join(", ")})</title></rect>`;
+      if (i % 7 === 0 || i === D.pIdx) s += `<text x="${Lp + i * cw}" y="${H - 6}" font-size="10" fill="#4a545e"${i === D.pIdx ? ' font-weight="700"' : ""}>${esc(label)}</text>`;
+    });
+    return s + `<line x1="${Lp}" x2="${W}" y1="${Tp + ih}" y2="${Tp + ih}" stroke="#79838d"/></svg>`;
+  }
+
+  function render(i) {
+    if (i == null) { panel.innerHTML = `<p class="small">${esc(T.hint)}</p>`; return; }
+    const it = D.items[i];
+    const catRow = `<div class="tlc-cats">${CATS.map(c => `<span class="cat cat-${c}">${D.icons[c]}${esc(T.cat[c])} <b>${it.cats[c].toLocaleString(D.locale)}</b></span>`).join("")}</div>`;
+    const kv = [[T.events, `${it.n.toLocaleString(D.locale)}`, `${it.crit.toLocaleString(D.locale)} Critical · ${it.err.toLocaleString(D.locale)} Error`]];
+    if (it.comm) kv.push([T.drops, it.drops.toLocaleString(D.locale), `${T.offline}: ${it.offTxt} · ${T.uptime}: ${it.uptimeTxt}`]);
+    panel.innerHTML =
+      `<div class="tlc-h"><span class="dot" style="background:${COL[it.cat]}"></span>${esc(it.name)}${pinned === i ? ` <span class="small">📌</span>` : ""}</div>` +
+      `<div class="tlc-st">${esc(it.statusTxt)}</div>` +
+      catRow + `<div class="tlc-kv">${kv.map(([k, v, d]) => `<div><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div><div class="d">${esc(d)}</div></div>`).join("")}</div>` +
+      `<div class="small" style="margin-top:10px">${esc(T.daily)}</div>${chart(it.daily, it.dailyCat)}` +
+      `<div class="small" style="margin-top:8px">${esc(T.faults)}</div>` +
+      (it.faults.length ? `<ul class="tlc-f">${it.faults.map(f => `<li><span class="cat-i cat-${f[3]}">${D.icons[f[3]]}</span><span>${esc(f[0])}</span><b>${esc(f[1])}</b>${f[2] ? ` <span class="small">${esc(f[2])}</span>` : ""}</li>`).join("")}</ul>` : `<p class="small">${esc(T.noFaults)}</p>`) +
+      (it.lat == null ? `<p class="small">${esc(T.noPosOne)}</p>` : "");
+  }
+  function highlight(i, on) {
+    const r = rows.find(x => +x.dataset.tlc === i); if (r) r.classList.toggle("hl", on);
+    const m = markers[i]; if (m) { m.setStyle(on ? { weight: 4, color: "#1d2329" } : { weight: 2, color: "#ffffff" }); if (on) m.bringToFront(); }
+  }
+  function enter(i) { if (hovered != null) highlight(hovered, false); hovered = i; highlight(i, true); render(i); }
+  function leave(i) { highlight(i, false); hovered = null; if (pinned != null) { highlight(pinned, true); render(pinned); } else render(null); }
+  function pin(i) { if (pinned != null) highlight(pinned, false); pinned = pinned === i ? null : i; if (pinned != null) highlight(pinned, true); render(pinned ?? i); }
+
+  rows.forEach(r => {
+    const i = +r.dataset.tlc;
+    r.addEventListener("mouseenter", () => enter(i));
+    r.addEventListener("mouseleave", () => leave(i));
+    r.addEventListener("click", () => { pin(i); const m = markers[i]; if (m && map) map.panTo(m.getLatLng()); });
+  });
+
+  let map = null;
+  const Lf = window.L;
+  const pts = D.items.map((it, i) => [it, i]).filter(([it]) => it.lat != null);
+  if (!Lf || !Lf.map) mapEl.innerHTML = `<div class="tlc-nomap">${esc(T.mapFailed)}</div>`;
+  else if (!pts.length) mapEl.innerHTML = `<div class="tlc-nomap">${esc(T.noPosAll)}</div>`;
+  else {
+    map = Lf.map(mapEl, { scrollWheelZoom: false });
+    Lf.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+    const maxN = Math.max(1, ...pts.map(([it]) => it.n));
+    for (const [it, i] of pts.sort((a, b) => (a[0].cat === "ok") - (b[0].cat === "ok"))) {
+      const m = Lf.circleMarker([it.lat, it.lon], { radius: 7 + 11 * Math.sqrt(it.n / maxN), color: "#ffffff", weight: 2, fillColor: COL[it.cat], fillOpacity: 0.9 })
+        .bindTooltip(`<b>${esc(it.name)}</b><br>${esc(it.statusTxt)}`, { direction: "top", offset: [0, -6] }).addTo(map);
+      m.on("mouseover", () => enter(i)); m.on("mouseout", () => leave(i)); m.on("click", () => pin(i));
+      markers[i] = m;
+    }
+    if (pts.length === 1) map.setView([pts[0][0].lat, pts[0][0].lon], 15);
+    else map.fitBounds(pts.map(([it]) => [it.lat, it.lon]), { padding: [30, 30], maxZoom: 16 });
+    setTimeout(() => map.invalidateSize(), 200);
+  }
+  render(null);
+}
+
+/* ---- build the data for mountMap from the report (in the current language) ---- */
+function buildMapData(r) {
+  const F = L(), W = HISTORY_WEEKS;
+  const firstDay = addDays(r.from, -7 * W), days = [];
+  for (let d = firstDay; d <= r.to; d = addDays(d, 1)) days.push(d);
+  const idx = {}; days.forEach((d, i) => idx[d] = i);
+  const pIdx = idx[r.from];
+  const dailyBy = {}, dailyCatBy = {};
+  const zeros = () => new Array(days.length).fill(0);
+  for (const e of r.hist.concat(r.cur)) {
+    const i = idx[dayKey(e.t)]; if (i == null) continue;
+    (dailyBy[e.ctrl] = dailyBy[e.ctrl] || zeros())[i]++;
+    const dc = dailyCatBy[e.ctrl] = dailyCatBy[e.ctrl] || { lamp: zeros(), det: zeros(), sys: zeros() }; dc[e.cat][i]++;
+  }
+  const info = {}; for (const c of r.ctrlInfo || []) info[c.name] = c;
+  const commBy = {}; if (r.comm) for (const x of r.comm.rows) commBy[x.name] = x;
+  const names = new Set([...r.ctrlList.map(c => c.name), ...Object.keys(commBy)]);
+  const now = Date.now();
+  const items = [...names].map(name => {
+    const c = r.ctrlList.find(x => x.name === name) || { n: 0, crit: 0, err: 0, avg: 0, lamp: 0, det: 0, sys: 0 };
+    const cm = commBy[name], inf = info[name] || {};
+    const faults = r.active.filter(f => f.ctrl === name);
+    const flap = faults.some(f => f.status.includes("flap"));
+    const cat = cm && cm.status === "offline" ? "offline" : cm && cm.status === "never" ? "never" : (c.crit || flap) ? "crit" : (c.n || (cm && cm.unstable)) ? "err" : "ok";
+    let statusTxt = cm ? (cm.status === "offline" ? `${F.cs.offline} ${F.since} ${fmtSince(cm.since)} (${fmtDur(now - cm.since)})` : F.cs[cm.status]) : "";
+    if (cm && cm.unstable) statusTxt += ` · ${F.cs.unstable}`;
+    if (flap) statusTxt += ` · ${F.st.flap}`;
+    statusTxt += (statusTxt ? " · " : "") + (c.n ? t("pEventsN", { n: num(c.n) }) : t("pNoFaultsShort"));
+    const daily = dailyBy[name] || new Array(days.length).fill(0);
+    const weeks = []; for (let w = 0; w < W; w++) weeks.unshift(daily.slice(w * 7, w * 7 + 7).reduce((a, b) => a + b, 0));
+    return {
+      name, lat: inf.lat ?? null, lon: inf.lon ?? null, cat, statusTxt, n: c.n, crit: c.crit, err: c.err, avg: c.avg,
+      comm: !!cm, drops: cm ? cm.drops : 0, offTxt: cm ? (cm.status === "never" ? "–" : cm.offMs ? fmtDur(cm.offMs) : "0") : "", uptimeTxt: cm ? (cm.status === "never" ? "–" : pct1(cm.uptime)) : "",
+      commStatus: cm ? cm.status : null, unstable: cm ? cm.unstable : false,
+      faults: faults.slice(0, 6).map(f => [faultLabel(f), `${num(f.n)}×`, f.status.filter(s => s !== "repeat").map(s => F.st[s]).join(", "), f.cat]),
+      daily, dailyCat: dailyCatBy[name] || { lamp: zeros(), det: zeros(), sys: zeros() }, cats: { lamp: c.lamp, det: c.det, sys: c.sys },
+      weeksHist: weeks.reverse(), // newest first, like elsewhere
+    };
+  });
+  const rank = { offline: 0, never: 1, crit: 2, err: 3, ok: 4 };
+  items.sort((a, b) => rank[a.cat] - rank[b.cat] || b.n - a.n || b.drops - a.drops || a.name.localeCompare(b.name, "da"));
+  return {
+    locale: F.locale, pIdx, dayLabels: days.map(d => fmtD(dayStart(d))), items, catColor: CAT_COLOR, icons: CAT_ICON,
+    T: { hint: t("mapHint"), events: t("tEvents"), drops: t("thDrops"), offline: t("thOffTime"), uptime: t("thUptime"), daily: t("pDaily", { w: W }),
+         faults: t("pFaults"), cat: F.catShort, noFaults: t("pNoFaults"), mapFailed: t("mapFailed"), noPosAll: t("noPosAll"), noPosOne: t("noPosOne") },
+  };
+}
+
+/* ---- HTML for the map section: map + detail panel + list ---- */
+function renderMapSection(r) {
+  const D = r.mapData = buildMapData(r), F = L();
+  const withPos = D.items.filter(i => i.lat != null).length, noPos = D.items.length - withPos;
+  const legend = [["offline", F.cs.offline], ["never", F.cs.never], ["crit", t("lgCrit")], ["err", t("lgErr")], ["ok", t("lgOk")]]
+    .map(([k, l]) => `<span><span class="dot c-${k}"></span>${esc(l)}</span>`).join("");
+  const hasComm = !!r.comm;
+  let h = `<h3>${esc(t("hMap"))}</h3><p class="note">${esc(t("mapNote"))}${noPos && withPos ? " " + esc(t("noPosSome", { n: noPos })) : ""}</p>
+  <div class="tlc-root">
+    <div class="tlc-top"><div class="tlc-map"></div><div class="tlc-panel"></div></div>
+    <div class="tlc-legend">${legend}</div>
+    <div class="tablewrap"><table class="tlc-list"><thead><tr><th>${esc(t("thCrossing"))}</th>${hasComm ? `<th>${esc(t("thStatusNow"))}</th>` : ""}<th class="n">${esc(t("thInPeriod"))}</th>${CATS.map(c => `<th class="n">${catIcon(c)}${esc(F.catShort[c])}</th>`).join("")}${hasComm ? `<th class="n">${esc(t("thDrops"))}</th>` : ""}<th class="n">${esc(t("thAvgBefore"))}</th><th>${esc(t("thWeekly"))}</th></tr></thead><tbody>` +
+    D.items.map((it, i) => `<tr data-tlc="${i}"><td><span class="dot c-${it.cat}"></span>${esc(it.name)}${it.lat == null ? ' <span class="small">⌀</span>' : ""}</td>` +
+      (hasComm ? `<td>${it.commStatus ? `<span class="badge b-${it.commStatus}">${esc(F.cs[it.commStatus])}</span>` : ""}${it.unstable ? `<span class="badge b-unstable">${esc(F.cs.unstable)}</span>` : ""}</td>` : "") +
+      `<td class="n"><b>${num(it.n)}</b></td>${CATS.map(c => `<td class="n">${it.cats[c] ? num(it.cats[c]) : '<span class="small">0</span>'}</td>`).join("")}` +
+      (hasComm ? `<td class="n">${num(it.drops)}</td>` : "") +
+      `<td class="n">${num(it.avg, 1)}</td><td>${spark(it.weeksHist, it.n)}</td></tr>`).join("") +
+    `</tbody></table></div>
+  </div>`;
+  return h;
+}
+
+async function activateMap(r) {
+  const root = document.querySelector("#report .tlc-root");
+  if (!root || !r.mapData) return;
+  const ok = await loadLeaflet();
+  if (!ok) log("Leaflet (map library) could not be loaded");
+  if (document.querySelector("#report .tlc-root") !== root) return;   // report was redrawn meanwhile
+  mountMap(root, r.mapData);
+}
+
+/* GPS from eDaptiva's controller list – field names are read flexibly */
+function parseGps(g) {
+  if (!g || typeof g !== "object") return null;
+  let lat = null, lon = null;
+  for (const [k, v] of Object.entries(g)) {
+    const n = typeof v === "string" ? parseFloat(v.replace(",", ".")) : v;
+    if (typeof n !== "number" || !isFinite(n)) continue;
+    if (/^lat/i.test(k)) lat = n; else if (/^(lon|lng)/i.test(k)) lon = n;
+  }
+  if (lat == null && Array.isArray(g.coordinates)) [lon, lat] = g.coordinates;
+  if (lat == null || lon == null || (lat === 0 && lon === 0) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+  return { lat, lon };
+}
 </script>
 <script>
 "use strict";
@@ -356,6 +612,18 @@ const HISTORY_WEEKS = 4;        // weeks before the period used for trends
 const PERSIST_WEEKS = 3;        // "persistent" = seen in at least this many of the history weeks
 const FLAP_PER_DAY = 10;        // a fault with more events per day than this is "flapping"
 const EVENT_LIST_MAX = 500;     // max rows in the "all events" list
+/* three fault categories – used for colours, icons and grouping everywhere */
+const CATS = ["lamp", "det", "sys"];
+const CAT_COLOR = { lamp: "#b98300", det: "#2459a8", sys: "#2aa39a" };   // validated: colour-blind safe, distinct
+const catOf = (fam) => fam === "lamp" ? "lamp" : fam === "detector" ? "det" : "sys";
+const CAT_ICON = {
+  lamp: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="4.5" y="0.8" width="7" height="14.4" rx="2" fill="currentColor"/><circle cx="8" cy="4.3" r="1.5" fill="#fff"/><circle cx="8" cy="8" r="1.5" fill="#fff"/><circle cx="8" cy="11.7" r="1.5" fill="#fff"/></svg>`,
+  det: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="2.1" fill="currentColor"/><path d="M4.8 4.8a4.5 4.5 0 0 0 0 6.4M11.2 4.8a4.5 4.5 0 0 1 0 6.4M2.4 2.4a7.9 7.9 0 0 0 0 11.2M13.6 2.4a7.9 7.9 0 0 1 0 11.2" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>`,
+  sys: `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="4" y="4" width="8" height="8" rx="1.6" fill="currentColor"/><path d="M6.2 1.4v2M9.8 1.4v2M6.2 12.6v2M9.8 12.6v2M1.4 6.2h2M1.4 9.8h2M12.6 6.2h2M12.6 9.8h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+};
+const catIcon = (c) => `<span class="cat-i cat-${c}">${CAT_ICON[c]}</span>`;
+const catChip = (c, label) => `<span class="cat cat-${c}">${CAT_ICON[c]}${esc(label ?? L().catShort[c])}</span>`;
+
 const COMM_LOST = "18:100004", COMM_OK = "18:100079";   // "Communication with the controller lost / restored"
 const UNSTABLE_PER_DAY = 1;     // at least this many connection drops per day = "unstable connection"
 const INCIDENT_GAP_S = 10;      // events on the same crossing within this many seconds = one incident
@@ -554,7 +822,9 @@ async function loadControllers() {
   try {
     const list = await apiGet(`Controllers/${cid}/all?culture=en-US`);
     state.controllers = {};
-    for (const c of list) if (!c.Archived) state.controllers[c.Id] = { uuid: c.UUID, name: (c.ControllerName || "").trim() };
+    for (const c of list) if (!c.Archived) state.controllers[c.Id] = { uuid: c.UUID, name: (c.ControllerName || "").trim(), ...(parseGps(c.Gps) || {}) };
+    const g = list.find(c => c.Gps);
+    log("GPS sample:", g ? JSON.stringify(g.Gps).slice(0, 160) : "(none)", "· with position:", Object.values(state.controllers).filter(c => c.lat != null).length);
     log("Crossings loaded:", Object.keys(state.controllers).length);
   } catch (e) {
     if (e.session) { msg($("login-msg"), "err", t("sessionExpired")); return logout(); }
@@ -690,6 +960,7 @@ async function fetchEvents(ev) {
     const report = analyse(all, from, to, sevs, crossings);
     report.area = area ? area.name : null;
     report.comm = comm;
+    report.ctrlInfo = scope;
     report.site = state.site;
     report.created = Date.now();
     state.report = report;
@@ -732,7 +1003,7 @@ function normalise(e) {
   const tms = parseT(e.EventStampOn);
   const h = new Date(tms).getHours();
   const ctrl = (e.ControllerName || "").trim() || "?";
-  return { id: e.Id, t: tms, ctrl, sev: e.Severity, code, fam, comp, color, extra, night: h >= 22 || h < 6, msg: msgTxt, rawCode: e.MessageCode,
+  return { id: e.Id, t: tms, ctrl, sev: e.Severity, code, fam, cat: catOf(fam), comp, color, extra, night: h >= 22 || h < 6, msg: msgTxt, rawCode: e.MessageCode,
            key: [ctrl, fam, comp].join("|") };
 }
 
@@ -771,7 +1042,7 @@ function analyse(rawEvents, from, to, sevs, crossings) {
 
   /* faults (crossing + type + component) */
   const faults = {};
-  const mk = (e) => faults[e.key] = faults[e.key] || { key: e.key, ctrl: e.ctrl, fam: e.fam, comp: e.comp,
+  const mk = (e) => faults[e.key] = faults[e.key] || { key: e.key, ctrl: e.ctrl, fam: e.fam, cat: e.cat, comp: e.comp,
     cur: [], weeks: new Array(HISTORY_WEEKS).fill(0), histTotal: 0, sev: 0, colors: {}, extras: {} };
   for (const e of cur) {
     const f = mk(e); f.cur.push(e); f.sev = Math.max(f.sev, e.sev);
@@ -802,9 +1073,9 @@ function analyse(rawEvents, from, to, sevs, crossings) {
 
   /* per crossing */
   const ctrls = {};
-  const blank = (name) => ({ name, n: 0, crit: 0, err: 0, hist: 0 });
+  const blank = (name) => ({ name, n: 0, crit: 0, err: 0, hist: 0, lamp: 0, det: 0, sys: 0 });
   for (const name of crossings || []) ctrls[name] = ctrls[name] || blank(name);
-  for (const e of cur) { const c = ctrls[e.ctrl] = ctrls[e.ctrl] || blank(e.ctrl); c.n++; e.sev === 4 ? c.crit++ : c.err++; }
+  for (const e of cur) { const c = ctrls[e.ctrl] = ctrls[e.ctrl] || blank(e.ctrl); c.n++; c[e.cat]++; e.sev === 4 ? c.crit++ : c.err++; }
   for (const e of hist) { const c = ctrls[e.ctrl] = ctrls[e.ctrl] || blank(e.ctrl); c.hist++; }
   const incPerCtrl = {}; for (const i of incidents) incPerCtrl[i.ctrl] = (incPerCtrl[i.ctrl] || 0) + 1;
   const ctrlList = Object.values(ctrls).map(c => ({ ...c, avg: c.hist / HISTORY_WEEKS, incidents: incPerCtrl[c.name] || 0 }))
@@ -812,10 +1083,20 @@ function analyse(rawEvents, from, to, sevs, crossings) {
 
   /* weekly series: history weeks + the period */
   const weekly = [];
-  for (let w = HISTORY_WEEKS - 1; w >= 0; w--) weekly.push({ start: pStart - (w + 1) * 7 * 864e5, count: hist.filter(e => weekIdx(e.t) === w).length, cur: false });
-  weekly.push({ start: null, count: cur.length, cur: true });
+  const byCat = (list) => { const o = { lamp: 0, det: 0, sys: 0 }; for (const e of list) o[e.cat]++; return o; };
+  for (let w = HISTORY_WEEKS - 1; w >= 0; w--) { const l = hist.filter(e => weekIdx(e.t) === w); weekly.push({ start: pStart - (w + 1) * 7 * 864e5, count: l.length, cats: byCat(l), cur: false }); }
+  weekly.push({ start: null, count: cur.length, cats: byCat(cur), cur: true });
 
-  return { from, to, sevs, periodDays, cur, hist, incidents, patternList, active, gone, ctrlList, weekly,
+  /* per category */
+  const cats = {};
+  for (const c of CATS) {
+    const ce = cur.filter(e => e.cat === c);
+    cats[c] = { n: ce.length, crit: ce.filter(e => e.sev === 4).length, avg: hist.filter(e => e.cat === c).length / HISTORY_WEEKS,
+                ctrls: new Set(ce.map(e => e.ctrl)).size, top: active.filter(f => f.cat === c).slice().sort((a, b) => b.n - a.n).slice(0, 3),
+                faults: active.filter(f => f.cat === c).length };
+  }
+
+  return { from, to, sevs, periodDays, cur, hist, incidents, patternList, active, gone, ctrlList, weekly, cats,
            crossingsTotal: crossings ? crossings.length : null,
            baselinePerWeek: hist.length / HISTORY_WEEKS, curPerWeek: cur.length * 7 / periodDays };
 }
@@ -931,7 +1212,13 @@ function weeklyChart(weekly) {
   weekly.forEach((w, i) => {
     const label = w.cur ? t("periodLbl") : fmtD(w.start);
     const x = Lp + i * cw + (cw - bw) / 2, cx = Lp + i * cw + cw / 2, h = w.count / top * ih, y = T + ih - h;
-    if (h > 0) s += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="3" fill="${w.cur ? "#1f4f86" : "#7ea3cf"}"><title>${esc(label)}: ${num(w.count)}</title></rect>`;
+    let yy = T + ih;
+    const tip = `${label}: ${num(w.count)} (${CATS.map(c => `${L().catShort[c]} ${num(w.cats[c])}`).join(", ")})`;
+    for (const c of CATS) {
+      const hc = w.cats[c] / top * ih; if (hc <= 0) continue; yy -= hc;
+      s += `<rect x="${x}" y="${yy}" width="${bw}" height="${hc}" fill="${CAT_COLOR[c]}" fill-opacity="${w.cur ? 1 : 0.5}"><title>${esc(tip)}</title></rect>`;
+    }
+    if (h > 0 && w.cur) s += `<rect x="${x - 1.5}" y="${y - 1.5}" width="${bw + 3}" height="${h + 1.5}" fill="none" stroke="#1d2329" stroke-width="1.5"/>`;
     s += `<text x="${cx}" y="${y - 4}" font-size="11" fill="#4a545e" text-anchor="middle">${num(w.count)}</text>`;
     s += `<text x="${cx}" y="${H - B + 16}" font-size="11" fill="#4a545e" text-anchor="middle" ${w.cur ? 'font-weight="700"' : ""}>${esc(label)}</text>`;
   });
@@ -970,6 +1257,37 @@ function renderComm(r) {
 }
 const pct1 = (x) => { const v = x * 100, s = v >= 99.95 || v === 0 ? num(v) : num(v, 1); return LANG === "da" ? `${s} %` : `${s}%`; };
 
+/* ---- the three fault categories: share bar + one card each ---- */
+function renderTypes(r) {
+  const F = L(), total = r.cur.length;
+  let h = `<h3>${esc(t("hTypes"))}</h3><p class="note">${esc(t("typesNote"))}</p>`;
+  h += `<div class="catbar">` + CATS.filter(c => r.cats[c].n).map(c => {
+    const p = r.cats[c].n / total;
+    return `<div style="flex:${r.cats[c].n};background:${CAT_COLOR[c]}" title="${esc(F.cat[c])}: ${num(r.cats[c].n)} (${pct(p)})">${p >= 0.08 ? esc(pct(p)) : ""}</div>`;
+  }).join("") + (total ? "" : `<div style="flex:1;background:#e2e6ea"></div>`) + `</div>`;
+  h += `<div class="cats">` + CATS.map(c => {
+    const x = r.cats[c];
+    return `<div class="catcard" style="border-top-color:${CAT_COLOR[c]}">
+      <div class="catcard-h">${catChip(c, F.cat[c])}</div>
+      <div class="v">${num(x.n)}</div>
+      <div class="d">${total ? esc(t("typesShare", { p: pct(x.n / total) })) + " · " : ""}${delta(x.n * 7 / r.periodDays, x.avg)}</div>
+      <div class="d">${x.n ? esc(t("typesOn", { n: x.ctrls, f: x.faults })) : esc(t("typesNone"))}${x.crit ? ` · <span class="up">${num(x.crit)} Critical</span>` : ""}</div>
+      ${x.top.length ? `<ul class="cat-top">${x.top.map(f => `<li><span>${esc(compLabel(f.fam, f.comp) || famLabel(f.fam, f.comp))}<br><span class="small">${esc(f.ctrl)}</span></span><b>${num(f.n)}×</b></li>`).join("")}</ul>` : ""}
+    </div>`;
+  }).join("") + `</div>`;
+  return h;
+}
+/* filter buttons above a table: rows with data-cat are shown/hidden (self-contained – also used in the e-mailed file) */
+function bindCatFilters(root) {
+  for (const bar of root.querySelectorAll(".catfilter")) {
+    const table = root.querySelector("#" + bar.dataset.for); if (!table) continue;
+    for (const b of bar.querySelectorAll("button")) b.addEventListener("click", () => {
+      for (const x of bar.querySelectorAll("button")) x.classList.toggle("on", x === b);
+      for (const tr of table.querySelectorAll("tbody tr")) tr.style.display = b.dataset.cat === "all" || tr.dataset.cat === b.dataset.cat ? "" : "none";
+    });
+  }
+}
+
 function renderReport(r) {
   const F = L(), site = r.site, W = HISTORY_WEEKS;
   const badge = (s) => `<span class="badge b-${s}">${esc(F.st[s])}</span>`;
@@ -992,17 +1310,22 @@ function renderReport(r) {
   </div>`;
 
   h += `<h3>${esc(t("hInsights"))}</h3><ul class="insights">${insights(r).map(i => `<li class="${i.lvl}">${i.html}</li>`).join("")}</ul>`;
+  h += renderTypes(r);
+  h += renderMapSection(r);
   h += renderComm(r);
 
   const legend = [["flap", t("defFlap", { n: FLAP_PER_DAY })], ["persist", t("defPersist", { p: PERSIST_WEEKS, w: W })], ["recur", t("defRecur", { p1: PERSIST_WEEKS - 1, w: W })],
                   ["new", t("defNew", { w: W })], ["repeat", t("defRepeat")]].map(([k, d]) => `<b>${esc(F.st[k])}</b> = ${esc(d)}`).join(" · ");
+  const nByCat = (c) => r.active.filter(f => f.cat === c).length;
   h += `<h3>${esc(t("hFaults"))}</h3><p class="note">${esc(t("faultsNote", { w: W }))} ${legend}.</p>
-    <div class="tablewrap"><table><thead><tr><th>${esc(t("thCrossing"))}</th><th>${esc(t("thFault"))}</th><th class="n">${esc(t("thCount"))}</th><th class="n">${esc(t("thDays"))}</th><th>${esc(t("thWeekly"))}</th><th class="n">${esc(t("thWeeksBefore"))}</th><th>${esc(t("thStatus"))}</th><th>${esc(t("thExtra"))}</th><th>${esc(t("thLast"))}</th></tr></thead><tbody>` +
+    <div class="catfilter noprint" data-for="faults-table"><button type="button" class="on" data-cat="all">${esc(t("filterAll"))} <b>${r.active.length}</b></button>${
+      CATS.map(c => `<button type="button" data-cat="${c}">${catChip(c)} <b>${nByCat(c)}</b></button>`).join("")}</div>
+    <div class="tablewrap"><table id="faults-table"><thead><tr><th>${esc(t("thCrossing"))}</th><th>${esc(t("thFault"))}</th><th class="n">${esc(t("thCount"))}</th><th class="n">${esc(t("thDays"))}</th><th>${esc(t("thWeekly"))}</th><th class="n">${esc(t("thWeeksBefore"))}</th><th>${esc(t("thStatus"))}</th><th>${esc(t("thExtra"))}</th><th>${esc(t("thLast"))}</th></tr></thead><tbody>` +
     r.active.map(f => {
       const c = compLabel(f.fam, f.comp);
       const colors = Object.entries(f.colors).map(([k, v]) => `${F.color[k] || k} ${v}×`).join(", ");
       const extras = Object.entries(f.extras).map(([k, v]) => `${extraLabel(k)} (${v})`).join(", ");
-      return `<tr><td>${esc(f.ctrl)}</td><td>${f.sev === 4 ? '<span class="sev sev-4">Critical</span> ' : ""}${esc(famLabel(f.fam, f.comp))}${c ? ` <code>${esc(c)}</code>` : ""}${
+      return `<tr data-cat="${f.cat}"><td>${esc(f.ctrl)}</td><td>${catIcon(f.cat)}${f.sev === 4 ? '<span class="sev sev-4">Critical</span> ' : ""}${esc(famLabel(f.fam, f.comp))}${c ? ` <code>${esc(c)}</code>` : ""}${
         colors ? `<br><span class="small">${esc(colors)}</span>` : ""}${f.withCrit ? `<br><span class="small">${esc(t("withCrit", { n: f.withCrit }))}</span>` : ""}</td>
       <td class="n"><b>${num(f.n)}</b></td><td class="n">${f.days}</td><td>${spark(f.weeks, f.n)}</td><td class="n">${f.wp}/${W}</td>
       <td>${f.status.map(badge).join("")}</td><td class="small">${esc(extras)}</td><td>${esc(fmtDT(f.last))}</td></tr>`;
@@ -1016,13 +1339,8 @@ function renderReport(r) {
         <td class="small">${esc(p.list.slice(0, 12).map(i => fmtDT(i.start)).join(" · "))}${p.list.length > 12 ? " …" : ""}</td></tr>`).join("") + `</tbody></table></div>`;
   }
 
-  h += `<h3>${esc(t("hWeekly"))}</h3>${weeklyChart(r.weekly)}
+  h += `<h3>${esc(t("hWeekly"))}</h3>${weeklyChart(r.weekly)}<div class="tlc-legend">${CATS.map(c => catChip(c, L().cat[c])).join("")}<span class="small">${esc(t("weeklyLegend"))}</span></div>
     <p class="small">${esc(t("weeklyNote", { w: W }) + (r.periodDays !== 7 ? t("periodDaysNote", { n: r.periodDays }) : ""))}</p>`;
-
-  h += `<h3>${esc(t("hPerCrossing"))}</h3><div class="tablewrap"><table><thead><tr><th>${esc(t("thCrossing"))}</th><th class="n">${esc(t("thInPeriod"))}</th><th class="n">Critical</th><th class="n">Error</th><th class="n">${esc(t("thIncidents"))}</th><th class="n">${esc(t("thAvgBefore"))}</th></tr></thead><tbody>` +
-    r.ctrlList.filter(c => (r.crossingsTotal && r.crossingsTotal <= 40) || c.n > 0 || c.avg >= 0.5)
-      .map(c => `<tr><td>${esc(c.name)}</td><td class="n"><b>${num(c.n)}</b></td><td class="n">${num(c.crit)}</td><td class="n">${num(c.err)}</td><td class="n">${num(c.incidents)}</td><td class="n">${num(c.avg, 1)}</td></tr>`).join("") +
-    `</tbody></table></div>`;
 
   if (r.gone.length) {
     h += `<h3>${esc(t("hGone"))}</h3><p class="note">${esc(t("goneNote", { w: W }))}</p>
@@ -1039,6 +1357,8 @@ function renderReport(r) {
 
   $("report").innerHTML = h;
   $("result").classList.remove("hidden");
+  bindCatFilters(document.getElementById("report"));
+  activateMap(r);
 }
 
 /* ---- e-mail: save the report as a self-contained HTML file and open the mail program ---- */
@@ -1050,6 +1370,13 @@ function saveFile(name, content, type) {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 function openMail(url) { location.href = url; }
+/* the report's HTML without the live map (the file builds its own map when opened) */
+function reportHtmlForFile() {
+  const clone = $("report").cloneNode(true);
+  for (const el of clone.querySelectorAll(".tlc-map, .tlc-panel")) { el.innerHTML = ""; el.removeAttribute("style"); el.className = el.className.split(" ").filter(c => c.startsWith("tlc-")).join(" "); }
+  for (const el of clone.querySelectorAll("tr.hl")) el.classList.remove("hl");
+  return clone.innerHTML;
+}
 function emailReport() {
   const r = state.report; if (!r) return;
   const name = r.area || siteName(r.site);
@@ -1058,7 +1385,10 @@ function emailReport() {
   const title = t("repTitle", { name }) + " " + period;
   const fileName = `${(LANG === "da" ? "Fejlrapport" : "Fault-report")}_${name.replace(/[^\wæøåÆØÅ-]+/g, "-")}_${r.from}_${r.to}.html`;
   const html = `<!doctype html><html lang="${L().htmlLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">` +
-    `<title>${esc(title)}</title><style>${css}</style></head><body><div class="wrap"><div class="card report">${$("report").innerHTML}</div></div></body></html>`;
+    `<title>${esc(title)}</title><link rel="stylesheet" href="${LEAFLET_CSS}"><style>${css}</style></head><body><div class="wrap"><div class="card report">${reportHtmlForFile()}</div></div>` +
+    `<script>(${bindCatFilters.toString()})(document);<\/script>` +
+    (r.mapData ? `<script src="${LEAFLET_JS}"><\/script><script>(${mountMap.toString()})(document.querySelector(".tlc-root"), ${JSON.stringify(r.mapData).replace(/</g, "\\u003c")});<\/script>` : "") +
+    `</body></html>`;
   saveFile(fileName, html, "text/html;charset=utf-8");
 
   const crit = r.cur.filter(e => e.sev === 4).length;
@@ -1066,6 +1396,7 @@ function emailReport() {
   const figures = [
     `• ${t("tEvents")}: ${num(r.cur.length)} (${plain(delta(r.curPerWeek, r.baselinePerWeek))})`,
     `• ${t("tCrit")}: ${num(crit)}`,
+    `• ${t("hTypes")}: ${CATS.map(c => `${L().cat[c]} ${num(r.cats[c].n)}`).join(" · ")}`,
     r.crossingsTotal ? `• ${t("tNoFault")}: ${t("tNoFaultV", { a: noFaultCount(r), b: r.crossingsTotal })}` : null,
     `• ${t("tFaults")}: ${num(r.active.length)}`,
   ].filter(Boolean);
