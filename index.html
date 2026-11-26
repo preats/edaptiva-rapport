@@ -9,12 +9,16 @@
 --err:#b42318;--err-bg:#fdecea;--ok:#1e7a46;--ok-bg:#e5f4ea;--crit:#b42318;--crit-bg:#fdecea;--warn:#8a6100;--warn-bg:#fdf6d8}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Arial,sans-serif}
-.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+.wrap{max-width:1100px;margin:0 auto;padding:16px 16px 64px}
+.topbar{display:flex;justify-content:flex-end;margin-bottom:8px}
+.lang{display:inline-flex;border:1px solid #c9d0d6;border-radius:8px;overflow:hidden;background:#fff}
+.lang button{background:#fff;color:var(--ink2);border-radius:0;padding:6px 12px;font-size:13px;font-weight:600}
+.lang button.on{background:var(--ink);color:#fff}
 header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
 header.top h1{margin:0;font-size:22px}
 header.top .who{color:var(--ink2);font-size:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px;margin-bottom:16px}
-.login{max-width:400px;margin:40px auto}
+.login{max-width:420px;margin:24px auto}
 .login h2{margin:0 0 4px;font-size:20px}
 .login p.sub{margin:0 0 18px;color:var(--ink2);font-size:14px}
 label{display:block;font-size:13px;color:var(--ink2);margin:12px 0 4px}
@@ -22,7 +26,9 @@ input[type=text],input[type=password],input[type=date],select{width:100%;padding
 input:focus,select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
 button{font:inherit;border:0;border-radius:7px;padding:10px 18px;cursor:pointer;background:var(--accent);color:var(--accent-ink);font-weight:600}
 button.secondary{background:#e9edf0;color:var(--ink)}
+button.link{background:none;color:var(--accent);padding:10px 4px;font-weight:600}
 button:disabled{opacity:.55;cursor:default}
+.btnrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
 .row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
 .row>div{flex:1 1 170px}
 .checks{display:flex;gap:18px;padding:8px 0}
@@ -34,6 +40,7 @@ button:disabled{opacity:.55;cursor:default}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:4px 0 18px}
 .tile{background:var(--bg);border-radius:8px;padding:12px 14px}
 .tile .k{font-size:13px;color:var(--ink2)}.tile .v{font-size:28px;font-weight:650;font-variant-numeric:tabular-nums}
+.tile .d{font-size:12px;color:var(--muted)}
 .tablewrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
 th{text-align:left;color:var(--ink2);font-weight:600;border-bottom:2px solid var(--line);padding:7px 8px;white-space:nowrap}
@@ -50,44 +57,51 @@ details.diag pre{white-space:pre-wrap;background:#fff;border:1px solid var(--lin
 .rep-head{border-bottom:3px solid var(--ink);padding-bottom:10px;margin-bottom:18px}
 .rep-head h2{margin:0;font-size:22px}.rep-head .sub{color:var(--ink2);font-size:14px}
 .report h3{font-size:17px;margin:28px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--line)}
-.tile .d{font-size:12px;color:var(--muted)}
 .up{color:var(--crit)}.down{color:var(--ok)}
 ul.insights{margin:0;padding:0;list-style:none}
 ul.insights li{padding:10px 12px 10px 14px;border-left:4px solid var(--ink2);background:var(--bg);border-radius:0 6px 6px 0;margin-bottom:8px}
 ul.insights li.crit{border-left-color:var(--crit)}ul.insights li.warn{border-left-color:#c98a00}
 .badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600;white-space:nowrap;margin:1px 4px 1px 0}
-.b-vedvarende{color:var(--crit);background:var(--crit-bg)}.b-blinker{color:#fff;background:var(--crit)}.b-stigende{color:#b54708;background:#fef0e1}
-.b-tilbagevendende{color:var(--warn);background:var(--warn-bg)}.b-ny{color:#175cd3;background:#eaf1fd}
-.b-gentaget{color:var(--ink);background:#e9edf0}.b-udbedret{color:var(--ok);background:var(--ok-bg)}
+.b-flap{color:#fff;background:var(--crit)}.b-persist{color:var(--crit);background:var(--crit-bg)}.b-rising{color:#b54708;background:#fef0e1}
+.b-recur{color:var(--warn);background:var(--warn-bg)}.b-new{color:#175cd3;background:#eaf1fd}
+.b-repeat{color:var(--ink);background:#e9edf0}.b-gone{color:var(--ok);background:var(--ok-bg)}
 .spark{display:inline-flex;gap:2px;align-items:flex-end;height:20px;vertical-align:middle}
 .spark span{width:7px;background:#a9c2df;border-radius:1px 1px 0 0;min-height:1px}
 .spark span.z{background:#e2e6ea}.spark span.cur{background:#1f4f86}
 .note{font-size:13px;color:var(--ink2);background:var(--bg);padding:8px 12px;border-radius:6px;margin:8px 0}
 code{font-size:13px}
-@media print{body{background:#fff;font-size:12px}.wrap{padding:0;max-width:none}.noprint,#view-app>header,#view-app>.card:first-of-type,details.diag{display:none!important}
+@media print{body{background:#fff;font-size:12px}.wrap{padding:0;max-width:none}.noprint,.topbar,#view-app>header,#view-app>.card:first-of-type,details.diag{display:none!important}
  .card{border:0;padding:0;margin:0}tr,li,.tile{break-inside:avoid}h3{break-after:avoid}}
 @media (max-width:600px){.card{padding:16px}}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="topbar noprint">
+    <div class="lang" role="group" aria-label="Sprog / Language">
+      <button type="button" data-lang="da">DK</button><button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
 
   <!-- ===================== LOGIN ===================== -->
   <section id="view-login" class="card login">
-    <h2>eDaptiva fejlrapport</h2>
-    <p class="sub">Log ind med dit eDaptiva-login.</p>
+    <h2 data-i18n="appTitle"></h2>
+    <p class="sub" data-i18n="loginSub"></p>
     <form id="login-form" autocomplete="on">
-      <label for="site">Kommune</label>
+      <label for="site" data-i18n="instance"></label>
       <select id="site" name="site"></select>
-      <label for="username">Brugernavn</label>
+      <label for="username" data-i18n="username"></label>
       <input id="username" name="username" type="text" autocomplete="username" required>
-      <label for="password">Adgangskode</label>
+      <label for="password" data-i18n="password"></label>
       <input id="password" name="password" type="password" autocomplete="current-password" required>
       <div id="twofa-box" class="hidden">
-        <label for="twofa">Engangskode (2-faktor)</label>
+        <label for="twofa" data-i18n="twofa"></label>
         <input id="twofa" name="twofa" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
       </div>
-      <div style="margin-top:18px"><button id="login-btn" type="submit">Log ind</button></div>
+      <div class="btnrow">
+        <button id="login-btn" type="submit" data-i18n="loginBtn"></button>
+        <button id="saved-btn" type="button" class="link hidden" data-i18n="savedLogin"></button>
+      </div>
       <div id="login-msg" class="msg"></div>
     </form>
   </section>
@@ -95,24 +109,24 @@ code{font-size:13px}
   <!-- ===================== APP ===================== -->
   <section id="view-app" class="hidden">
     <header class="top">
-      <h1>eDaptiva fejlrapport</h1>
-      <div class="who"><span id="who"></span> &nbsp;<button class="secondary" id="logout-btn" type="button">Log ud</button></div>
+      <h1 data-i18n="appTitle"></h1>
+      <div class="who"><span id="who"></span> &nbsp;<button class="secondary" id="logout-btn" type="button" data-i18n="logout"></button></div>
     </header>
 
     <div class="card">
       <form id="query-form">
         <div class="row">
-          <div id="area-box" class="hidden"><label for="area">Område</label><select id="area"></select></div>
-          <div><label for="from">Fra dato</label><input id="from" type="date" required></div>
-          <div><label for="to">Til dato (inkl.)</label><input id="to" type="date" required></div>
+          <div id="area-box" class="hidden"><label for="area" data-i18n="area"></label><select id="area"></select></div>
+          <div><label for="from" data-i18n="from"></label><input id="from" type="date" required></div>
+          <div><label for="to" data-i18n="to"></label><input id="to" type="date" required></div>
           <div>
-            <label>Alvorlighed</label>
+            <label data-i18n="severity"></label>
             <div class="checks">
               <label><input type="checkbox" id="sev-4" checked> Critical error</label>
               <label><input type="checkbox" id="sev-3" checked> Error</label>
             </div>
           </div>
-          <div style="flex:0 0 auto"><button id="fetch-btn" type="submit">Hent hændelser</button></div>
+          <div style="flex:0 0 auto"><button id="fetch-btn" type="submit" data-i18n="fetchBtn"></button></div>
         </div>
         <div id="fetch-msg" class="msg"></div>
       </form>
@@ -120,44 +134,232 @@ code{font-size:13px}
 
     <div id="result" class="card report hidden">
       <div class="noprint actions">
-        <button type="button" id="print-btn">Udskriv / gem som PDF</button>
-        <button class="secondary" id="dl-json" type="button">Download data (JSON)</button>
+        <button type="button" id="print-btn" data-i18n="print"></button>
+        <button class="secondary" id="dl-json" type="button" data-i18n="json"></button>
       </div>
       <div id="report"></div>
     </div>
   </section>
 
-  <details class="diag"><summary>Teknisk log (til fejlsøgning)</summary><pre id="diag"></pre></details>
+  <details class="diag"><summary data-i18n="diag"></summary><pre id="diag"></pre></details>
 </div>
+<script>
+"use strict";
+/* ===================================================================
+   TEXTS – Danish (da) and English (en).
+   A value is either a string with {placeholders} or a function.
+=================================================================== */
+const I18N = {
+  da: {
+    locale: "da-DK", htmlLang: "da", docTitle: "eDaptiva fejlrapport",
+    appTitle: "eDaptiva fejlrapport",
+    loginSub: "Log ind med dit eDaptiva-login.",
+    instance: "Kommune / instans", username: "Brugernavn", password: "Adgangskode",
+    twofa: "Engangskode (2-faktor)", loginBtn: "Log ind", savedLogin: "Brug gemt login…",
+    logout: "Log ud", area: "Område", from: "Fra dato", to: "Til dato (inkl.)", severity: "Alvorlighed",
+    fetchBtn: "Lav rapport", print: "Udskriv / gem som PDF", json: "Download data (JSON)",
+    diag: "Teknisk log (til fejlsøgning)",
+    // messages
+    loggingIn: "Logger ind…", err2fa: "Forkert engangskode.",
+    errTime: "Login afvist – eDaptiva melder et tidsproblem (tjek at PC'ens ur er korrekt).",
+    errCreds: "Forkert brugernavn eller adgangskode.", errUnexpected: "Uventet svar fra eDaptiva: {s}",
+    enter2fa: "Indtast engangskoden fra din 2-faktor-app.",
+    errNoToken: "Login gav intet adgangs-token (måske kræves 2-faktor, som siden endnu ikke kan læse).",
+    errEmpty: "Tomt svar fra eDaptiva.",
+    errCors: "Kunne ikke kontakte eDaptiva fra denne side. Enten er der ingen forbindelse, eller eDaptiva blokerer adgang fra denne adresse (CORS). Se teknisk log nederst.",
+    sessionExpired: "Din session er udløbet – log ind igen.",
+    loadingAreas: "Henter områder…", areasFailed: "Kunne ikke hente områder", crossingsN: "{n} kryds",
+    errSev: "Vælg mindst én alvorlighed.", errDates: "Fra-dato skal være før til-dato.",
+    errAreasNotLoaded: "Områderne er ikke hentet endnu – vent et øjeblik eller log ind igen.", errChooseArea: "Vælg et område.",
+    progress: "Henter {what}: periode + {w} ugers historik… {n} hændelser ({d}/{c} dele færdige)", data: "data",
+    analysing: "Analyserer {n} hændelser…",
+    done: "Rapport lavet: {n} hændelser i perioden {p} (+ {h} i de {w} foregående uger til sammenligning).",
+    errFetchCors: "Kunne ikke hente data (netværk eller CORS). Se teknisk log.", eDaptivaSaid: "eDaptiva svarede {s}",
+    noSaved: "Ingen gemt login valgt.",
+    // report – head & tiles
+    repTitle: "Fejlrapport – {name}", subPeriod: "Periode {a} – {b}", subSev: "Alvorlighed: {s}",
+    subCompared: "Sammenlignet med de {w} foregående uger", subMade: "Lavet {d}",
+    tEvents: "Hændelser i perioden", tCrit: "Heraf Critical error", tCritSub: "{n} Error",
+    tNoFault: "Kryds uden fejl", tNoFaultV: "{a} af {b}", inPeriod: "i perioden",
+    tFaults: "Forskellige fejl", tFaultsSub: "på {c} kryds · {i} samlede hændelsesforløb",
+    tRepeat: "Fejl der kommer igen", tRepeatSub: "set også i tidligere uger",
+    noPrev: "ingen de foregående uger", vsAvg: "ift. snit {b}/uge",
+    // report – sections
+    hInsights: "Vigtigste observationer",
+    hFaults: "Fejl i perioden – og om de har været der før",
+    faultsNote: "Én række = samme fejl på samme kryds (fx samme detektor eller signalgruppe). Søjlerne viser antal pr. uge de {w} foregående uger og perioden (mørk).",
+    defFlap: "mere end {n} gange pr. døgn", defPersist: "set i mindst {p} af {w} uger", defRecur: "set 1–{p1} af {w} uger",
+    defNew: "ikke set i de {w} uger", defRepeat: "flere gange eller flere dage i perioden",
+    thCrossing: "Kryds", thFault: "Fejl", thCount: "Antal", thDays: "Dage", thWeekly: "Uge for uge", thWeeksBefore: "Uger før",
+    thStatus: "Status", thExtra: "Ekstra info", thLast: "Senest", withCrit: "{n}× sammen med kritisk systemfejl",
+    hTogether: "Fejl der kommer sammen",
+    togetherNote: "Hændelser på samme kryds inden for {s} sekunder er samlet til ét forløb. Det viser, hvilke fejl der kommer sammen (fx en lampefejl der udløser en kritisk systemfejl).",
+    thSequence: "Forløb", thTimes: "Gange", thWhen: "Tidspunkter",
+    hWeekly: "Udvikling uge for uge", weeklyNote: "Ugerne er de {w} hele uger før periodens start (dato = ugens første dag).",
+    periodDaysNote: " Perioden er {n} dage.", periodLbl: "Periode", chartAria: "Hændelser pr. uge",
+    hPerCrossing: "Pr. kryds", thInPeriod: "I perioden", thIncidents: "Forløb", thAvgBefore: "Snit/uge før",
+    hGone: "Fejl der ikke er set i perioden", goneNote: "Var der i mindst 2 af de {w} foregående uger, men ikke i perioden – muligvis udbedret.",
+    hAll: "Alle hændelser i perioden", showN: "Vis {n} hændelser", showLatest: "Vis de seneste {m} af {n} hændelser",
+    thTime: "Tidspunkt", thSeverity: "Alvorlighed", thMessage: "Besked",
+    sparkTitle: "Uge for uge, ældste → periode: {v}",
+    // statuses
+    st: { flap: "blinker", persist: "vedvarende", rising: "stigende", recur: "tilbagevendende", new: "ny", repeat: "gentaget", gone: "ikke set nu" },
+    // fault families and details
+    fam: { detector: "Detektorfejl", lamp: "Lampefejl", crit: "Kritisk systemfejl", power: "Strømforsyningsfejl",
+           timeshift: "Tidsjustering (ur)", cycle: "Omløbsovervågning", pt: "Busprioritering – modtagerfejl" },
+    famPlural: { detector: "detektorfejl", lamp: "lampefejl", crit: "kritiske systemfejl", power: "strømforsyningsfejl",
+           timeshift: "tidsjusteringer", cycle: "omløbsfejl", pt: "modtagerfejl", other: "fejl" },
+    signalGroup: "Signalgruppe {g}", color: { red: "rød", yellow: "gul", green: "grøn" },
+    extra: { parasite: "parasitspænding", inactivity: "inaktivitet" }, unknown: "(ukendt)",
+    weeksWord: "uger", nowWord: "nu",
+    // observations (functions get already-escaped html)
+    insFlap: (n, pct, list, F) => `<b>${n} fejl blinker</b> (mere end ${F} gange pr. døgn) og står for <b>${pct} af alle hændelser</b> i perioden: ${list}. En detektor der blinker skifter typisk mellem fejl og OK hele tiden – det skal udbedres på stedet, og indtil da drukner andre fejl i støjen.`,
+    insPattern: (ctrl, sig, n, days) => `<b>${ctrl}:</b> ${sig} gentog sig <b>${n} gange</b> (${days}).`,
+    insExtra: (x) => ` Ekstra info: ${x}.`,
+    insCritFollow: " Kritisk systemfejl kommer i samme sekund som den anden fejl – sandsynligvis en følgefejl, så det er én fejl at udbedre, ikke to.",
+    insBurstOne: (k, s, when, dets) => `${k} detektorer faldt ud inden for ${s} sek. den ${when} (${dets}).`,
+    insBurstMany: (count, k, when, dets) => `${count} gange faldt 3 eller flere detektorer ud samtidig – fx ${k} detektorer den ${when} (${dets}).`,
+    insBurstTail: " Når flere detektorer fejler samtidig, tyder det på en fælles årsag frem for fejl på de enkelte detektorer.",
+    insPersistOne: (ctrl, label, wp, w, n) => `<b>${ctrl} – ${label}:</b> har været der i <b>${wp} af de ${w} foregående uger</b> og igen i perioden (${n}×). Fejlen er ikke forsvundet af sig selv.`,
+    insPersistMany: (ctrl, k, plural, items, p, w) => `<b>${ctrl} – ${k} ${plural} der bliver ved med at komme igen:</b> ${items}. De har været der i mindst ${p} af de ${w} foregående uger og er ikke forsvundet af sig selv.`,
+    insRising: (ctrl, label, n, avg) => `<b>${ctrl} – ${label}:</b> stigende – ${n}× i perioden mod normalt ${avg} pr. uge.`,
+    insNight: (ctrl, label, pct) => `<b>${ctrl} – ${label}:</b> ${pct} af hændelserne sker om natten (22–06).`,
+    insGone: (n) => `${n} fejl, som var der i flere af de foregående uger, er <b>ikke set i perioden</b> (muligvis udbedret) – se listen nederst.`,
+    insTotal: (n, pw, avg, w) => `Perioden har ${n} hændelser (${pw} pr. uge) mod gennemsnitligt ${avg} pr. uge de ${w} foregående uger.`,
+    insNoHist: (w) => `Der er ingen hændelser i de ${w} foregående uger, så der kan ikke sammenlignes bagud.`,
+  },
 
+  en: {
+    locale: "en-GB", htmlLang: "en", docTitle: "eDaptiva fault report",
+    appTitle: "eDaptiva fault report",
+    loginSub: "Log in with your eDaptiva login.",
+    instance: "Municipality / instance", username: "Username", password: "Password",
+    twofa: "One-time code (2-factor)", loginBtn: "Log in", savedLogin: "Use saved login…",
+    logout: "Log out", area: "Area", from: "From date", to: "To date (incl.)", severity: "Severity",
+    fetchBtn: "Create report", print: "Print / save as PDF", json: "Download data (JSON)",
+    diag: "Technical log (for troubleshooting)",
+    loggingIn: "Logging in…", err2fa: "Wrong one-time code.",
+    errTime: "Login rejected – eDaptiva reports a time problem (check that the PC clock is correct).",
+    errCreds: "Wrong username or password.", errUnexpected: "Unexpected response from eDaptiva: {s}",
+    enter2fa: "Enter the one-time code from your 2-factor app.",
+    errNoToken: "The login returned no access token (2-factor may be required, which this page cannot read yet).",
+    errEmpty: "Empty response from eDaptiva.",
+    errCors: "Could not contact eDaptiva from this page. Either there is no connection, or eDaptiva blocks access from this address (CORS). See the technical log at the bottom.",
+    sessionExpired: "Your session has expired – please log in again.",
+    loadingAreas: "Loading areas…", areasFailed: "Could not load areas", crossingsN: "{n} crossings",
+    errSev: "Choose at least one severity.", errDates: "The from date must be before the to date.",
+    errAreasNotLoaded: "The areas have not been loaded yet – wait a moment or log in again.", errChooseArea: "Choose an area.",
+    progress: "Fetching {what}: period + {w} weeks of history… {n} events ({d}/{c} parts done)", data: "data",
+    analysing: "Analysing {n} events…",
+    done: "Report created: {n} events in the period {p} (+ {h} in the previous {w} weeks for comparison).",
+    errFetchCors: "Could not fetch data (network or CORS). See the technical log.", eDaptivaSaid: "eDaptiva responded {s}",
+    noSaved: "No saved login selected.",
+    repTitle: "Fault report – {name}", subPeriod: "Period {a} – {b}", subSev: "Severity: {s}",
+    subCompared: "Compared with the previous {w} weeks", subMade: "Created {d}",
+    tEvents: "Events in the period", tCrit: "Of which Critical error", tCritSub: "{n} Error",
+    tNoFault: "Crossings without faults", tNoFaultV: "{a} of {b}", inPeriod: "in the period",
+    tFaults: "Different faults", tFaultsSub: (v) => `on ${v.c} crossing${v.c == 1 ? "" : "s"} · ${v.i} grouped incident${v.i == 1 ? "" : "s"}`,
+    tRepeat: "Faults that come back", tRepeatSub: "also seen in earlier weeks",
+    noPrev: "none in the previous weeks", vsAvg: "vs. avg. {b}/week",
+    hInsights: "Key observations",
+    hFaults: "Faults in the period – and whether they were there before",
+    faultsNote: "One row = the same fault on the same crossing (e.g. the same detector or signal group). The bars show the count per week for the previous {w} weeks and the period (dark).",
+    defFlap: "more than {n} times per day", defPersist: "seen in at least {p} of {w} weeks", defRecur: "seen in 1–{p1} of {w} weeks",
+    defNew: "not seen in the {w} weeks", defRepeat: "several times or on several days in the period",
+    thCrossing: "Crossing", thFault: "Fault", thCount: "Count", thDays: "Days", thWeekly: "Week by week", thWeeksBefore: "Weeks before",
+    thStatus: "Status", thExtra: "Extra info", thLast: "Latest", withCrit: "{n}× together with critical system error",
+    hTogether: "Faults that occur together",
+    togetherNote: "Events on the same crossing within {s} seconds are grouped into one incident. This shows which faults occur together (e.g. a lamp failure that triggers a critical system error).",
+    thSequence: "Incident", thTimes: "Times", thWhen: "When",
+    hWeekly: "Week-by-week trend", weeklyNote: "The weeks are the {w} full weeks before the start of the period (date = first day of the week).",
+    periodDaysNote: " The period is {n} days.", periodLbl: "Period", chartAria: "Events per week",
+    hPerCrossing: "Per crossing", thInPeriod: "In period", thIncidents: "Incidents", thAvgBefore: "Avg/week before",
+    hGone: "Faults not seen in the period", goneNote: "Present in at least 2 of the previous {w} weeks, but not in the period – possibly fixed.",
+    hAll: "All events in the period", showN: "Show {n} events", showLatest: "Show the latest {m} of {n} events",
+    thTime: "Time", thSeverity: "Severity", thMessage: "Message",
+    sparkTitle: "Week by week, oldest → period: {v}",
+    st: { flap: "flapping", persist: "persistent", rising: "rising", recur: "recurring", new: "new", repeat: "repeated", gone: "not seen now" },
+    fam: { detector: "Detector failure", lamp: "Lamp failure", crit: "Critical system error", power: "Power supply failure",
+           timeshift: "Time adjustment (clock)", cycle: "Cycle monitoring", pt: "Bus priority – receiver failure" },
+    famPlural: { detector: "detector failures", lamp: "lamp failures", crit: "critical system errors", power: "power supply failures",
+           timeshift: "time adjustments", cycle: "cycle monitoring faults", pt: "receiver failures", other: "faults" },
+    signalGroup: "Signal group {g}", color: { red: "red", yellow: "yellow", green: "green" },
+    extra: { parasite: "parasite voltage", inactivity: "inactivity" }, unknown: "(unknown)",
+    weeksWord: "weeks", nowWord: "now",
+    insFlap: (n, pct, list, F) => `<b>${n} ${n === 1 ? "fault is" : "faults are"} flapping</b> (more than ${F} times per day) and ${n === 1 ? "accounts" : "account"} for <b>${pct} of all events</b> in the period: ${list}. A flapping detector typically switches between fault and OK all the time – it needs to be fixed on site, and until then other faults get lost in the noise.`,
+    insPattern: (ctrl, sig, n, days) => `<b>${ctrl}:</b> ${sig} repeated <b>${n} times</b> (${days}).`,
+    insExtra: (x) => ` Extra info: ${x}.`,
+    insCritFollow: " The critical system error occurs in the same second as the other fault – most likely a consequence of it, so it is one fault to fix, not two.",
+    insBurstOne: (k, s, when, dets) => `${k} detectors failed within ${s} s on ${when} (${dets}).`,
+    insBurstMany: (count, k, when, dets) => `${count} times, 3 or more detectors failed at the same time – e.g. ${k} detectors on ${when} (${dets}).`,
+    insBurstTail: " When several detectors fail at the same time, it points to a common cause rather than faults in the individual detectors.",
+    insPersistOne: (ctrl, label, wp, w, n) => `<b>${ctrl} – ${label}:</b> present in <b>${wp} of the previous ${w} weeks</b> and again in the period (${n}×). The fault has not gone away by itself.`,
+    insPersistMany: (ctrl, k, plural, items, p, w) => `<b>${ctrl} – ${k} ${plural} that keep coming back:</b> ${items}. They have been present in at least ${p} of the previous ${w} weeks and have not gone away by themselves.`,
+    insRising: (ctrl, label, n, avg) => `<b>${ctrl} – ${label}:</b> rising – ${n}× in the period vs. normally ${avg} per week.`,
+    insNight: (ctrl, label, pct) => `<b>${ctrl} – ${label}:</b> ${pct} of the events happen at night (22–06).`,
+    insGone: (n) => `${n} ${n === 1 ? "fault" : "faults"} that ${n === 1 ? "was" : "were"} present in several of the previous weeks ${n === 1 ? "has" : "have"} <b>not been seen in the period</b> (possibly fixed) – see the list at the bottom.`,
+    insTotal: (n, pw, avg, w) => `The period has ${n} events (${pw} per week) compared with an average of ${avg} per week in the previous ${w} weeks.`,
+    insNoHist: (w) => `There are no events in the previous ${w} weeks, so no comparison back in time is possible.`,
+  },
+};
+</script>
 <script>
 "use strict";
 /* ---------------------------------------------------------------
-   Municipalities. The API id is the GUID segment in eDaptiva's API URL.
-   Add new municipalities here.
+   eDaptiva instances. apiId = the GUID segment in eDaptiva's API URL.
+   areas: true  -> the instance has several areas (municipalities); the user picks one.
+   Add new instances here.
 ---------------------------------------------------------------- */
 const SITES = [
-  { id: "favrskov", name: "Favrskov Kommune", host: "https://favrskov.edaptiva.cloud", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71" },
-  { id: "verdo", name: "Verdo – generel (vælg område)", host: "https://verdo.edaptiva.cloud", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71", areas: true },
+  { id: "favrskov", name: { da: "Favrskov Kommune", en: "Favrskov Municipality" }, host: "https://favrskov.edaptiva.cloud", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71" },
+  { id: "verdo", name: { da: "Verdo – generel (vælg område)", en: "Verdo – general (choose area)" }, short: "Verdo", host: "https://verdo.edaptiva.cloud", apiId: "72f9e7db-9d7f-4a16-a2cb-3a6e73bbdb71", areas: true },
 ];
 const SEVERITY = { 3: "Error", 4: "Critical error" };
 const PAGE_SIZE = 1000, MAX_PAGES = 300;
 const PARALLEL = 3;             // simultaneous requests to eDaptiva
-const PERSIST_WEEKS = 3;        // "vedvarende" = seen in at least this many of the history weeks
-const FLAP_PER_DAY = 10;        // a fault with more events per day than this is "blinkende" (flapping)
-const EVENT_LIST_MAX = 500;     // max rows in the "all events" list
 const HISTORY_WEEKS = 4;        // weeks before the period used for trends
+const PERSIST_WEEKS = 3;        // "persistent" = seen in at least this many of the history weeks
+const FLAP_PER_DAY = 10;        // a fault with more events per day than this is "flapping"
+const EVENT_LIST_MAX = 500;     // max rows in the "all events" list
 const INCIDENT_GAP_S = 10;      // events on the same crossing within this many seconds = one incident
 
-/* test override: ?host=http://localhost:8766&apiId=test (used only for local testing) */
+/* test override: ?host=http://localhost:8766&apiId=test[&areas=1] (only for local testing) */
 (() => {
   const q = new URLSearchParams(location.search);
-  if (q.get("host")) SITES.unshift({ id: "test", name: "TEST (" + q.get("host") + ")", host: q.get("host"), apiId: q.get("apiId") || "test", areas: q.get("areas") === "1" });
+  if (q.get("host")) SITES.unshift({ id: "test", name: { da: "TEST", en: "TEST" }, host: q.get("host"), apiId: q.get("apiId") || "test", areas: q.get("areas") === "1" });
 })();
 
 const $ = (id) => document.getElementById(id);
-const state = { site: null, token: null, deviceId: null, user: null, data: null, controllers: null, areas: null };
+const state = { site: null, token: null, deviceId: null, user: null, data: null, report: null, controllers: null, areas: null };
 
+/* --------------------------- LANGUAGE --------------------------- */
+let LANG = "da";
+try { LANG = localStorage.getItem("edaptiva-lang") || ((navigator.language || "da").toLowerCase().startsWith("da") ? "da" : "en"); } catch (e) {}
+if (!I18N[LANG]) LANG = "da";
+const L = () => I18N[LANG];
+function t(key, vars) {
+  let s = L()[key]; if (s == null) s = I18N.da[key] ?? key;
+  if (typeof s === "function" && vars && s.length === 1) return s(vars);
+  return typeof s === "string" && vars ? s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "") : s;
+}
+const num = (n, d = 0) => Number(n).toLocaleString(L().locale, { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (x) => LANG === "da" ? `${Math.round(x * 100)} %` : `${Math.round(x * 100)}%`;
+const siteName = (s) => s.name[LANG] || s.name.da;
+
+function setLang(lang) {
+  LANG = lang;
+  try { localStorage.setItem("edaptiva-lang", lang); } catch (e) {}
+  document.documentElement.lang = L().htmlLang; document.title = L().docTitle;
+  for (const el of document.querySelectorAll("[data-i18n]")) el.textContent = t(el.dataset.i18n);
+  for (const b of document.querySelectorAll(".lang button")) b.classList.toggle("on", b.dataset.lang === lang);
+  for (const o of $("site").options) { const s = SITES.find(x => x.id === o.value); if (s) o.textContent = siteName(s); }
+  if (state.site) $("who").textContent = `${state.user} · ${siteName(state.site)}`;
+  if (state.areas) fillAreas();
+  msg($("login-msg"), "", "");
+  if (state.report) { renderReport(state.report); showDoneMsg(state.report); } else msg($("fetch-msg"), "", "");
+}
+
+/* --------------------------- HELPERS --------------------------- */
 function log(...a) {
   const line = new Date().toLocaleTimeString("da-DK") + "  " + a.map(x => typeof x === "string" ? x : JSON.stringify(x)).join(" ");
   $("diag").textContent += line + "\n";
@@ -165,6 +367,17 @@ function log(...a) {
 }
 function msg(el, kind, text) { el.className = "msg " + (kind || ""); el.textContent = text || ""; }
 function apiBase(site) { return `${site.host}/${site.apiId}/api/v2.0/`; }
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pad = (n) => String(n).padStart(2, "0");
+const sep = () => LANG === "da" ? "." : "/";
+const fmtDate = (d) => d.split("-").reverse().join(sep());
+const fmtD = (ms) => { const d = new Date(ms); return `${pad(d.getDate())}${sep()}${pad(d.getMonth() + 1)}`; };
+const fmtDT = (ms) => { const d = new Date(ms); return `${fmtD(ms)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const fmtFull = (ms) => new Date(ms).toLocaleString(L().locale);
+const dayKey = (ms) => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+/* local midnight of "YYYY-MM-DD" + n days (DST safe) */
+function dayStart(str, n = 0) { const [y, m, d] = str.split("-").map(Number); return new Date(y, m - 1, d + n).getTime(); }
+function addDays(str, n) { return dayKey(dayStart(str, n)); }
 
 /* A per-browser device id (not secret). eDaptiva ties the login key to it. */
 function deviceId() {
@@ -177,15 +390,50 @@ function deviceId() {
   return d;
 }
 
+/* --------------------------- SAVED LOGINS ---------------------------
+   The browser stores passwords per web page, not per eDaptiva instance.
+   So we save the login as "username @ instance" (Chrome/Edge Credential
+   Management API). Picking such a saved login fills in the right instance. */
+const CRED_SEP = " @ ";
+const credSupported = () => !!(window.PasswordCredential && navigator.credentials);
+function splitCredId(id) {
+  const i = (id || "").lastIndexOf(CRED_SEP);
+  if (i > 0) { const site = SITES.find(s => s.id === id.slice(i + CRED_SEP.length).trim()); if (site) return { user: id.slice(0, i), site }; }
+  return null;
+}
+/* if the browser autofilled "malthe @ verdo" into the username field: split it */
+function normaliseUsernameField() {
+  const p = splitCredId($("username").value);
+  if (p) { $("username").value = p.user; $("site").value = p.site.id; }
+}
+async function storeCredential(user, pw, site) {
+  if (!credSupported()) return;
+  try {
+    await navigator.credentials.store(new PasswordCredential({ id: user + CRED_SEP + site.id, password: pw, name: `${user} – ${siteName(site)}` }));
+    log("Login offered to the browser's password manager as", user + CRED_SEP + site.id);
+  } catch (e) { log("Could not store credential:", e.message); }
+}
+async function useSavedLogin() {
+  try {
+    const c = await navigator.credentials.get({ password: true, mediation: "required" });
+    if (!c) return msg($("login-msg"), "info", t("noSaved"));
+    const p = splitCredId(c.id);
+    $("username").value = p ? p.user : c.id; if (p) $("site").value = p.site.id;
+    $("password").value = c.password || "";
+    if ($("password").value) $("login-form").requestSubmit(); else $("password").focus();
+  } catch (e) { log("Saved login not available:", e.message); }
+}
+
 /* --------------------------- LOGIN --------------------------- */
 let pending2fa = null;
 
 async function login(ev) {
   ev.preventDefault();
+  normaliseUsernameField();
   const site = SITES.find(s => s.id === $("site").value);
   const user = $("username").value.trim(), pw = $("password").value;
   const btn = $("login-btn"); btn.disabled = true;
-  msg($("login-msg"), "info", "Logger ind…");
+  msg($("login-msg"), "info", t("loggingIn"));
   try {
     let res;
     if (pending2fa) {
@@ -203,14 +451,9 @@ async function login(ev) {
         body: JSON.stringify({ LoginName: user, Password: pw, DeviceId: state.deviceId }),
       });
     }
-    log("Svar", res.status, res.statusText);
-    if (res.status === 401) {
-      const timeProblem = !!res.headers.get("Www-Authenticate");
-      throw new Error(pending2fa ? "Forkert engangskode." :
-        timeProblem ? "Login afvist – eDaptiva melder et tidsproblem (tjek at PC'ens ur er korrekt)." :
-        "Forkert brugernavn eller adgangskode.");
-    }
-    if (!res.ok) throw new Error(`Uventet svar fra eDaptiva: ${res.status} ${res.statusText}`);
+    log("Response", res.status, res.statusText);
+    if (res.status === 401) throw new Error(pending2fa ? t("err2fa") : res.headers.get("Www-Authenticate") ? t("errTime") : t("errCreds"));
+    if (!res.ok) throw new Error(t("errUnexpected", { s: `${res.status} ${res.statusText}` }));
 
     const twofa = res.headers.get("X-2fa-Token");
     const text = await res.text();
@@ -220,50 +463,43 @@ async function login(ev) {
     if (!token && twofa) {
       pending2fa = { token: twofa, csrf: res.headers.get("X-Csrf-Token") };
       $("twofa-box").classList.remove("hidden"); $("twofa").focus();
-      msg($("login-msg"), "info", "Indtast engangskoden fra din 2-faktor-app.");
-      log("2FA krævet");
+      msg($("login-msg"), "info", t("enter2fa"));
+      log("2FA required");
       return;
     }
-    if (!token) {
-      log("Login-svar uden token. Felter:", body ? Object.keys(body) : "(tomt)");
-      throw new Error(body ? "Login gav intet adgangs-token (måske kræves 2-faktor, som siden endnu ikke kan læse)." : "Tomt svar fra eDaptiva.");
-    }
+    if (!token) { log("Login response without token. Fields:", body ? Object.keys(body) : "(empty)"); throw new Error(body ? t("errNoToken") : t("errEmpty")); }
 
     state.site = site; state.token = token; state.user = user;
     try { sessionStorage.setItem("edaptiva-session", JSON.stringify({ site: site.id, token, deviceId: state.deviceId, user })); } catch (e) {}
     try { localStorage.setItem("edaptiva-last-site", site.id); } catch (e) {}
     pending2fa = null;
-    log("Logget ind som", user);
+    log("Logged in as", user, "on", site.id);
+    await storeCredential(user, pw, site);
     showApp();
   } catch (e) {
-    if (e instanceof TypeError) {
-      log("Netværks-/CORS-fejl:", e.message);
-      msg($("login-msg"), "err", "Kunne ikke kontakte eDaptiva fra denne side. Enten er der ingen forbindelse, eller eDaptiva blokerer adgang fra denne adresse (CORS). Se teknisk log nederst.");
-    } else {
-      log("Fejl:", e.message);
-      msg($("login-msg"), "err", e.message);
-    }
+    if (e instanceof TypeError) { log("Network/CORS error:", e.message); msg($("login-msg"), "err", t("errCors")); }
+    else { log("Error:", e.message); msg($("login-msg"), "err", e.message); }
   } finally { btn.disabled = false; }
 }
 
 function logout() {
-  state.token = null; state.data = null;
+  state.token = null; state.data = null; state.report = null; state.areas = null; state.controllers = null;
   try { sessionStorage.removeItem("edaptiva-session"); } catch (e) {}
   $("password").value = ""; $("twofa").value = ""; $("twofa-box").classList.add("hidden"); pending2fa = null;
-  $("result").classList.add("hidden");
+  $("result").classList.add("hidden"); msg($("fetch-msg"), "", "");
   $("view-app").classList.add("hidden"); $("view-login").classList.remove("hidden");
   msg($("login-msg"), "", "");
 }
 
 function showApp() {
   $("view-login").classList.add("hidden"); $("view-app").classList.remove("hidden");
-  $("who").textContent = `${state.user} · ${state.site.name}`;
+  $("who").textContent = `${state.user} · ${siteName(state.site)}`;
   $("password").value = "";
   loadControllers();
 }
 
-/* Crossings (and areas on the general instance). Only id/uuid/name are kept –
-   the controller list from eDaptiva also holds connection settings, which we drop. */
+/* Crossings (and areas on instances with areas). Only id/uuid/name are kept –
+   eDaptiva's controller list also holds connection settings, which we drop. */
 async function loadControllers() {
   const cid = crypto.randomUUID();
   state.controllers = null; state.areas = null;
@@ -272,28 +508,32 @@ async function loadControllers() {
     const list = await apiGet(`Controllers/${cid}/all?culture=en-US`);
     state.controllers = {};
     for (const c of list) if (!c.Archived) state.controllers[c.Id] = { uuid: c.UUID, name: (c.ControllerName || "").trim() };
-    log("Kryds hentet:", Object.keys(state.controllers).length);
+    log("Crossings loaded:", Object.keys(state.controllers).length);
   } catch (e) {
-    if (e.session) { msg($("login-msg"), "err", "Din session er udløbet – log ind igen."); return logout(); }
-    log("Kunne ikke hente krydsliste:", e.message);
+    if (e.session) { msg($("login-msg"), "err", t("sessionExpired")); return logout(); }
+    log("Could not load crossing list:", e.message);
   }
   if (!state.site.areas) return;
   const sel = $("area");
-  sel.innerHTML = "<option>Henter områder…</option>"; sel.disabled = true;
+  sel.innerHTML = `<option>${esc(t("loadingAreas"))}</option>`; sel.disabled = true;
   try {
     const areas = await apiGet(`Area/${cid}?deep=true&culture=en-US`);
     state.areas = areas.map(a => ({ id: a.Id, name: (a.Name || "").trim(),
         controllerIds: (a.ControllerIds || []).filter(id => !state.controllers || state.controllers[id]) }))
       .filter(a => a.controllerIds.length).sort((a, b) => a.name.localeCompare(b.name, "da"));
-    let last = null; try { last = localStorage.getItem("edaptiva-last-area-" + state.site.id); } catch (e) {}
-    sel.innerHTML = state.areas.map(a => `<option value="${esc(a.id)}"${a.id === last ? " selected" : ""}>${esc(a.name)} (${a.controllerIds.length} kryds)</option>`).join("");
+    fillAreas();
     sel.disabled = false;
-    log("Områder:", state.areas.map(a => a.name).join(", "));
+    log("Areas:", state.areas.map(a => a.name).join(", "));
   } catch (e) {
-    sel.innerHTML = "<option>Kunne ikke hente områder</option>";
-    if (e.session) { msg($("login-msg"), "err", "Din session er udløbet – log ind igen."); return logout(); }
-    log("Kunne ikke hente områder:", e.message);
+    sel.innerHTML = `<option>${esc(t("areasFailed"))}</option>`;
+    if (e.session) { msg($("login-msg"), "err", t("sessionExpired")); return logout(); }
+    log("Could not load areas:", e.message);
   }
+}
+function fillAreas() {
+  const sel = $("area"), cur = sel.value;
+  let last = cur; if (!last) try { last = localStorage.getItem("edaptiva-last-area-" + state.site.id); } catch (e) {}
+  sel.innerHTML = state.areas.map(a => `<option value="${esc(a.id)}"${a.id === last ? " selected" : ""}>${esc(a.name)} (${esc(t("crossingsN", { n: a.controllerIds.length }))})</option>`).join("");
 }
 
 /* --------------------------- FETCH --------------------------- */
@@ -301,16 +541,14 @@ async function loadControllers() {
 function localIso(dateStr, timeStr) {
   const d = new Date(`${dateStr}T${timeStr}`);
   const off = -d.getTimezoneOffset(), sign = off >= 0 ? "+" : "-", a = Math.abs(off);
-  return `${dateStr}T${timeStr}${sign}${String(Math.floor(a / 60)).padStart(2, "0")}:${String(a % 60).padStart(2, "0")}`;
+  return `${dateStr}T${timeStr}${sign}${pad(Math.floor(a / 60))}:${pad(a % 60)}`;
 }
-
-/* OR-tree over the crossings' UUIDs (eDaptiva only combines two conditions per OR) */
+/* OR-tree over the crossings' UUIDs (eDaptiva combines two conditions per OR) */
 function orTree(uuids) {
   if (uuids.length === 1) return { Type: "100", Value: uuids[0], Column: "ControllerUUID" };
   const m = Math.ceil(uuids.length / 2);
   return { Type: "11", Left: orTree(uuids.slice(0, m)), Right: orTree(uuids.slice(m)) };
 }
-
 function buildFilter(from, to, sevs, page, uuids) {
   const cond = [];
   if (uuids && uuids.length) cond.push(orTree(uuids));
@@ -320,13 +558,10 @@ function buildFilter(from, to, sevs, page, uuids) {
   cond.push({ Type: "103", Value: localIso(to, "23:59:59"), Column: "EventStampOn" });
   return { Conditions: cond, Sorting: [{ Column: "EventStampOn", SortingOrder: 1 }], PageSize: PAGE_SIZE, Page: page };
 }
-
 async function apiGet(path) {
-  const res = await fetch(apiBase(state.site) + path, {
-    headers: { "Authorization": "Bearer " + state.token, "X-Device-Id": state.deviceId },
-  });
+  const res = await fetch(apiBase(state.site) + path, { headers: { "Authorization": "Bearer " + state.token, "X-Device-Id": state.deviceId } });
   if (res.status === 401) { const e = new Error("SESSION"); e.session = true; throw e; }
-  if (!res.ok) throw new Error(`eDaptiva svarede ${res.status} ${res.statusText}`);
+  if (!res.ok) throw new Error(t("eDaptivaSaid", { s: `${res.status} ${res.statusText}` }));
   return res.json();
 }
 
@@ -334,34 +569,31 @@ async function fetchEvents(ev) {
   ev.preventDefault();
   const from = $("from").value, to = $("to").value;
   const sevs = [4, 3].filter(s => $("sev-" + s).checked);
-  if (!sevs.length) return msg($("fetch-msg"), "err", "Vælg mindst én alvorlighed.");
-  if (from > to) return msg($("fetch-msg"), "err", "Fra-dato skal være før til-dato.");
+  if (!sevs.length) return msg($("fetch-msg"), "err", t("errSev"));
+  if (from > to) return msg($("fetch-msg"), "err", t("errDates"));
 
-  // which crossings: the chosen area (general instance) or all
   let area = null, uuids = null;
   if (state.site.areas) {
-    if (!state.areas) return msg($("fetch-msg"), "err", "Områderne er ikke hentet endnu – vent et øjeblik eller log ind igen.");
+    if (!state.areas) return msg($("fetch-msg"), "err", t("errAreasNotLoaded"));
     area = state.areas.find(a => a.id === $("area").value);
-    if (!area) return msg($("fetch-msg"), "err", "Vælg et område.");
+    if (!area) return msg($("fetch-msg"), "err", t("errChooseArea"));
     uuids = area.controllerIds.map(id => state.controllers[id] && state.controllers[id].uuid).filter(Boolean);
     try { localStorage.setItem("edaptiva-last-area-" + state.site.id, area.id); } catch (e) {}
   }
   const btn = $("fetch-btn"); btn.disabled = true;
   const clientId = crypto.randomUUID ? crypto.randomUUID() : "00000000-0000-0000-0000-000000000000";
-  const histFrom = addDays(from, -7 * HISTORY_WEEKS);   // also fetch previous weeks for trend comparison
+  const histFrom = addDays(from, -7 * HISTORY_WEEKS);
 
-  // split into chunks (each history week + the period) and fetch a few at a time
+  // one chunk per history week + the period; a few chunks are fetched at the same time
   const chunks = [];
   for (let w = 0; w < HISTORY_WEEKS; w++) chunks.push([addDays(histFrom, 7 * w), addDays(histFrom, 7 * w + 6)]);
   chunks.push([from, to]);
   const all = []; let done = 0;
   const t0 = performance.now();
-  const progress = () => msg($("fetch-msg"), "info",
-    `Henter ${area ? "\u201d" + area.name + "\u201d" : "data"}: periode + ${HISTORY_WEEKS} ugers historik… ${all.length.toLocaleString("da-DK")} hændelser (${done}/${chunks.length} dele færdige)`);
+  const progress = () => msg($("fetch-msg"), "info", t("progress", { what: area ? `”${area.name}”` : t("data"), w: HISTORY_WEEKS, n: num(all.length), d: done, c: chunks.length }));
   async function fetchChunk([cFrom, cTo]) {
     for (let page = 0; page < MAX_PAGES; page++) {
-      const f = buildFilter(cFrom, cTo, sevs, page, uuids);
-      const rows = await apiGet(`EventArchive/${clientId}/all?filter=${encodeURIComponent(JSON.stringify(f))}&culture=en-US`);
+      const rows = await apiGet(`EventArchive/${clientId}/all?filter=${encodeURIComponent(JSON.stringify(buildFilter(cFrom, cTo, sevs, page, uuids)))}&culture=en-US`);
       all.push(...rows); progress();
       if (rows.length < PAGE_SIZE) break;
     }
@@ -371,74 +603,60 @@ async function fetchEvents(ev) {
     progress();
     const queue = [...chunks];
     await Promise.all(Array.from({ length: PARALLEL }, async () => { while (queue.length) await fetchChunk(queue.shift()); }));
-    log(`Hentet ${all.length} hændelser på ${((performance.now() - t0) / 1000).toFixed(1)} s` + (area ? ` (område ${area.name}, ${uuids.length} kryds)` : ""));
-    msg($("fetch-msg"), "info", `Analyserer ${all.length.toLocaleString("da-DK")} hændelser…`);
-    await new Promise(r => setTimeout(r, 30));   // let the message show
+    log(`Fetched ${all.length} events in ${((performance.now() - t0) / 1000).toFixed(1)} s` + (area ? ` (area ${area.name}, ${uuids.length} crossings)` : ""));
+    msg($("fetch-msg"), "info", t("analysing", { n: num(all.length) }));
+    await new Promise(r => setTimeout(r, 30));
     const crossings = area ? area.controllerIds.map(id => state.controllers[id].name)
                            : (state.controllers ? Object.values(state.controllers).map(c => c.name) : null);
     const report = analyse(all, from, to, sevs, crossings);
     report.area = area ? area.name : null;
+    report.site = state.site;
+    report.created = Date.now();
+    state.report = report;
     state.data = { site: state.site.id, area: report.area, from, to, historyFrom: histFrom, severities: sevs, fetched: new Date().toISOString(), events: all };
-    msg($("fetch-msg"), "ok", `Rapport lavet: ${report.cur.length.toLocaleString("da-DK")} hændelser i perioden ${fmtDate(from)}–${fmtDate(to)} (+ ${report.hist.length.toLocaleString("da-DK")} i de ${HISTORY_WEEKS} foregående uger til sammenligning).`);
+    showDoneMsg(report);
     renderReport(report);
   } catch (e) {
-    if (e.session) { msg($("login-msg"), "err", "Din session er udløbet – log ind igen."); logout(); return; }
-    if (e instanceof TypeError) { log("Netværks-/CORS-fejl:", e.message); msg($("fetch-msg"), "err", "Kunne ikke hente data (netværk eller CORS). Se teknisk log."); }
-    else { log("Fejl:", e.message); msg($("fetch-msg"), "err", e.message); }
+    if (e.session) { msg($("login-msg"), "err", t("sessionExpired")); logout(); return; }
+    if (e instanceof TypeError) { log("Network/CORS error:", e.message); msg($("fetch-msg"), "err", t("errFetchCors")); }
+    else { log("Error:", e.message); msg($("fetch-msg"), "err", e.message); }
   } finally { btn.disabled = false; }
 }
+function showDoneMsg(r) {
+  msg($("fetch-msg"), "ok", t("done", { n: num(r.cur.length), p: `${fmtDate(r.from)}–${fmtDate(r.to)}`, h: num(r.hist.length), w: HISTORY_WEEKS }));
+}
 
-/* --------------------------- ANALYSIS --------------------------- */
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const fmtDate = (d) => d.split("-").reverse().join(".");
-const pad = (n) => String(n).padStart(2, "0");
-const fmtDT = (ms) => { const d = new Date(ms); return `${pad(d.getDate())}.${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
-const fmtD = (ms) => { const d = new Date(ms); return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}`; };
-const dayKey = (ms) => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
-/* local midnight of "YYYY-MM-DD" + n days (DST safe) */
-function dayStart(str, n = 0) { const [y, m, d] = str.split("-").map(Number); return new Date(y, m - 1, d + n).getTime(); }
-function addDays(str, n) { return dayKey(dayStart(str, n)); }
-
+/* --------------------------- ANALYSIS (language neutral) --------------------------- */
 const LAMP_CODES = new Set(["60005", "60006", "60007", "60010"]);
-const COLOR_DA = { red: "rød", yellow: "gul", green: "grøn", amber: "gul" };
+const FAMILY_BY_CODE = { "60014": "detector", "60003": "crit", "60001": "power", "60026": "timeshift", "60024": "cycle", "60037": "pt" };
 
 /* Turn one raw eDaptiva event into what the report needs */
 function normalise(e) {
   const code = String(e.MessageCode || "").split(":").pop();
   const p = e.MessageParameters || [];
   const msgTxt = e.Message || "";
-  let family, detail = "", comp = "";
-  if (code === "60014") { family = "Detektorfejl"; comp = String(p[0] ?? (msgTxt.match(/'([^']*)'/) || [])[1] ?? ""); }
-  else if (LAMP_CODES.has(code)) {
-    family = "Lampefejl"; comp = "Signalgruppe " + (p[0] ?? (msgTxt.match(/Signal group:\s*([^,)]+)/) || [])[1] ?? "?");
-    const col = code === "60010" ? "red" : ((msgTxt.match(/Color:\s*(\w+)/i) || [])[1] || "").toLowerCase();
-    detail = COLOR_DA[col] || col;
+  let fam = FAMILY_BY_CODE[code] || (LAMP_CODES.has(code) ? "lamp" : "other"), comp = "", color = "";
+  if (fam === "detector") comp = String(p[0] ?? (msgTxt.match(/'([^']*)'/) || [])[1] ?? "");
+  if (fam === "lamp") {
+    comp = String(p[0] ?? (msgTxt.match(/Signal group:\s*([^,)]+)/) || [])[1] ?? "?");
+    color = code === "60010" ? "red" : ((msgTxt.match(/Color:\s*(\w+)/i) || [])[1] || "").toLowerCase().replace("amber", "yellow");
   }
-  else if (code === "60003") family = "Kritisk systemfejl";
-  else if (code === "60001") family = "Strømforsyningsfejl";
-  else if (code === "60026") family = "Tidsjustering (ur)";
-  else if (code === "60024") family = "Omløbsovervågning";
-  else if (code === "60037") family = "Busprioritering – modtagerfejl";
-  else family = msgTxt || e.MessageCode || "Ukendt";
-
+  if (fam === "other") comp = msgTxt || e.MessageCode || "?";
   const extra = (e.SecondaryEvents || []).map(s => {
     const m = s.Message || "";
-    if (/Parasite voltage/i.test(m)) return "parasitspænding";
+    if (/Parasite voltage/i.test(m)) return { k: "parasite" };
     const ina = m.match(/inactivity time:\s*(\d+)/i);
-    if (ina) return "inaktivitet " + ina[1];
-    return m;
+    if (ina) return { k: "inactivity", v: ina[1] };
+    return { k: "raw", v: m };
   });
-  const t = new Date(e.EventStampOn).getTime();
-  const h = new Date(t).getHours();
-  return { id: e.Id, t, ctrl: (e.ControllerName || "").trim() || "(ukendt)", sev: e.Severity, code, family, detail, comp,
-           extra, night: h >= 22 || h < 6, msg: msgTxt, rawCode: e.MessageCode,
-           key: [(e.ControllerName || "").trim(), family, comp].join("|") };
+  const tms = new Date(e.EventStampOn).getTime();
+  const h = new Date(tms).getHours();
+  const ctrl = (e.ControllerName || "").trim() || "?";
+  return { id: e.Id, t: tms, ctrl, sev: e.Severity, code, fam, comp, color, extra, night: h >= 22 || h < 6, msg: msgTxt, rawCode: e.MessageCode,
+           key: [ctrl, fam, comp].join("|") };
 }
 
-const faultLabel = (f) => f.comp ? `${f.family} – ${f.comp}` : f.family;
-
 function analyse(rawEvents, from, to, sevs, crossings) {
-  // de-duplicate (overlapping pages) and normalise
   const seen = new Set(), evs = [];
   for (const e of rawEvents) { const k = e.Id || JSON.stringify(e); if (!seen.has(k)) { seen.add(k); evs.push(normalise(e)); } }
   evs.sort((a, b) => a.t - b.t);
@@ -447,14 +665,12 @@ function analyse(rawEvents, from, to, sevs, crossings) {
   const periodDays = Math.round((pEnd - pStart) / 864e5);
   const cur = evs.filter(e => e.t >= pStart && e.t < pEnd);
   const hist = evs.filter(e => e.t >= hStart && e.t < pStart);
-  const weekIdx = (t) => Math.floor((pStart - t) / (7 * 864e5)); // 0 = week just before the period
-  const baselinePerWeek = hist.length / HISTORY_WEEKS;
+  const weekIdx = (tm) => Math.floor((pStart - tm) / (7 * 864e5)); // 0 = week just before the period
 
-  /* ---- incidents: events on one crossing within INCIDENT_GAP_S seconds of each other ---- */
-  const incidents = [];
-  const byCtrlCur = {};
-  for (const e of cur) (byCtrlCur[e.ctrl] = byCtrlCur[e.ctrl] || []).push(e);
-  for (const [ctrl, list] of Object.entries(byCtrlCur)) {
+  /* incidents: events on one crossing within INCIDENT_GAP_S seconds of each other */
+  const incidents = [], byCtrl = {};
+  for (const e of cur) (byCtrl[e.ctrl] = byCtrl[e.ctrl] || []).push(e);
+  for (const [ctrl, list] of Object.entries(byCtrl)) {
     let inc = null;
     for (const e of list) {
       if (inc && e.t - inc.end <= INCIDENT_GAP_S * 1000) { inc.events.push(e); inc.end = e.t; }
@@ -463,219 +679,213 @@ function analyse(rawEvents, from, to, sevs, crossings) {
     }
   }
   for (const inc of incidents) {
-    const parts = [...new Set(inc.events.map(e => faultLabel(e)))];
-    inc.signature = parts.sort((a, b) => (a.startsWith("Kritisk") ? 1 : 0) - (b.startsWith("Kritisk") ? 1 : 0)).join(" + ");
-    inc.detectors = [...new Set(inc.events.filter(e => e.family === "Detektorfejl").map(e => e.comp))];
-    inc.hasCrit = inc.events.some(e => e.family === "Kritisk systemfejl");
+    const parts = {}; for (const e of inc.events) parts[e.fam + "|" + e.comp] = { fam: e.fam, comp: e.comp };
+    inc.parts = Object.values(parts).sort((a, b) => (a.fam === "crit") - (b.fam === "crit"));
+    inc.sigKey = inc.parts.map(p => p.fam + "|" + p.comp).join("+");
+    inc.detectors = inc.parts.filter(p => p.fam === "detector").map(p => p.comp);
+    inc.hasCrit = inc.events.some(e => e.fam === "crit");
   }
-  // repeating incident patterns (same crossing, same combination)
   const patterns = {};
-  for (const inc of incidents) {
-    const k = inc.ctrl + "|" + inc.signature;
-    (patterns[k] = patterns[k] || { ctrl: inc.ctrl, signature: inc.signature, list: [] }).list.push(inc);
-  }
+  for (const inc of incidents) { const k = inc.ctrl + "#" + inc.sigKey; (patterns[k] = patterns[k] || { ctrl: inc.ctrl, parts: inc.parts, list: [] }).list.push(inc); }
   const patternList = Object.values(patterns).sort((a, b) => b.list.length - a.list.length);
 
-  /* ---- faults (crossing + type + component) ---- */
+  /* faults (crossing + type + component) */
   const faults = {};
-  const mk = (e) => faults[e.key] = faults[e.key] || { key: e.key, ctrl: e.ctrl, family: e.family, comp: e.comp,
-    cur: [], weeks: new Array(HISTORY_WEEKS).fill(0), histTotal: 0, sev: 0, details: {}, extras: {} };
+  const mk = (e) => faults[e.key] = faults[e.key] || { key: e.key, ctrl: e.ctrl, fam: e.fam, comp: e.comp,
+    cur: [], weeks: new Array(HISTORY_WEEKS).fill(0), histTotal: 0, sev: 0, colors: {}, extras: {} };
   for (const e of cur) {
     const f = mk(e); f.cur.push(e); f.sev = Math.max(f.sev, e.sev);
-    if (e.detail) f.details[e.detail] = (f.details[e.detail] || 0) + 1;
-    for (const x of e.extra) f.extras[x.replace(/\d+$/, "").trim()] = (f.extras[x.replace(/\d+$/, "").trim()] || 0) + 1;
+    if (e.color) f.colors[e.color] = (f.colors[e.color] || 0) + 1;
+    for (const x of e.extra) { const k = x.k === "raw" ? "raw:" + x.v : x.k; f.extras[k] = (f.extras[k] || 0) + 1; }
   }
   for (const e of hist) { const f = mk(e); const w = weekIdx(e.t); if (w >= 0 && w < HISTORY_WEEKS) f.weeks[w]++; f.histTotal++; }
 
   const faultList = Object.values(faults).map(f => {
-    const n = f.cur.length;
-    const wp = f.weeks.filter(x => x > 0).length;
+    const n = f.cur.length, wp = f.weeks.filter(x => x > 0).length;
     const days = new Set(f.cur.map(e => dayKey(e.t))).size;
-    const avg = f.histTotal / HISTORY_WEEKS;
-    const perWeek = n * 7 / periodDays;
+    const avg = f.histTotal / HISTORY_WEEKS, perWeek = n * 7 / periodDays;
     const status = [];
-    if (n === 0) { if (wp >= 2) status.push("udbedret"); }
+    if (n === 0) { if (wp >= 2) status.push("gone"); }
     else {
-      if (n / periodDays > FLAP_PER_DAY) status.push("blinker");
-      if (wp >= PERSIST_WEEKS) status.push("vedvarende");
-      else if (wp >= 1) status.push("tilbagevendende");
-      else status.push("ny");
-      if (wp >= 1 && n >= 3 && perWeek > 2 * avg) status.push("stigende");
-      if (n >= 3 || days >= 2) status.push("gentaget");
+      if (n / periodDays > FLAP_PER_DAY) status.push("flap");
+      if (wp >= PERSIST_WEEKS) status.push("persist"); else if (wp >= 1) status.push("recur"); else status.push("new");
+      if (wp >= 1 && n >= 3 && perWeek > 2 * avg) status.push("rising");
+      if (n >= 3 || days >= 2) status.push("repeat");
     }
     const nightShare = n ? f.cur.filter(e => e.night).length / n : 0;
-    // how often this fault came together with a critical system error in the same incident
-    const withCrit = f.family === "Kritisk systemfejl" ? 0 : f.cur.filter(e => e.inc && e.inc.hasCrit).length;
-    return { ...f, n, wp, days, avg, status, nightShare, withCrit, last: n ? f.cur[n - 1].t : null, first: n ? f.cur[0].t : null };
+    const withCrit = f.fam === "crit" ? 0 : f.cur.filter(e => e.inc && e.inc.hasCrit).length;
+    return { ...f, n, wp, days, avg, status, nightShare, withCrit, last: n ? f.cur[n - 1].t : null };
   });
-  const rank = (f) => (f.status.includes("blinker") ? -1 : f.status.includes("vedvarende") ? 0 : f.status.includes("stigende") ? 1 : f.status.includes("tilbagevendende") ? 2 : 3) * 1000 - f.n - (f.sev === 4 ? 500 : 0);
+  const rank = (f) => (f.status.includes("flap") ? -1 : f.status.includes("persist") ? 0 : f.status.includes("rising") ? 1 : f.status.includes("recur") ? 2 : 3) * 1000 - f.n - (f.sev === 4 ? 500 : 0);
   const active = faultList.filter(f => f.n > 0).sort((a, b) => rank(a) - rank(b));
-  const gone = faultList.filter(f => f.status.includes("udbedret")).sort((a, b) => b.wp - a.wp);
+  const gone = faultList.filter(f => f.status.includes("gone")).sort((a, b) => b.wp - a.wp);
 
-  /* ---- per crossing ---- */
+  /* per crossing */
   const ctrls = {};
-  for (const name of crossings || []) ctrls[name] = ctrls[name] || { name, n: 0, crit: 0, err: 0, hist: 0 };
-  for (const e of cur) { const c = ctrls[e.ctrl] = ctrls[e.ctrl] || { name: e.ctrl, n: 0, crit: 0, err: 0, hist: 0 }; c.n++; e.sev === 4 ? c.crit++ : c.err++; }
-  for (const e of hist) { const c = ctrls[e.ctrl] = ctrls[e.ctrl] || { name: e.ctrl, n: 0, crit: 0, err: 0, hist: 0 }; c.hist++; }
-  const ctrlList = Object.values(ctrls).map(c => ({ ...c, avg: c.hist / HISTORY_WEEKS, incidents: incidents.filter(i => i.ctrl === c.name).length }))
+  const blank = (name) => ({ name, n: 0, crit: 0, err: 0, hist: 0 });
+  for (const name of crossings || []) ctrls[name] = ctrls[name] || blank(name);
+  for (const e of cur) { const c = ctrls[e.ctrl] = ctrls[e.ctrl] || blank(e.ctrl); c.n++; e.sev === 4 ? c.crit++ : c.err++; }
+  for (const e of hist) { const c = ctrls[e.ctrl] = ctrls[e.ctrl] || blank(e.ctrl); c.hist++; }
+  const incPerCtrl = {}; for (const i of incidents) incPerCtrl[i.ctrl] = (incPerCtrl[i.ctrl] || 0) + 1;
+  const ctrlList = Object.values(ctrls).map(c => ({ ...c, avg: c.hist / HISTORY_WEEKS, incidents: incPerCtrl[c.name] || 0 }))
     .sort((a, b) => b.n - a.n || b.avg - a.avg);
 
-  /* ---- weekly series: 8 previous weeks + the period ---- */
+  /* weekly series: history weeks + the period */
   const weekly = [];
-  for (let w = HISTORY_WEEKS - 1; w >= 0; w--) {
-    const s = pStart - (w + 1) * 7 * 864e5;
-    weekly.push({ label: fmtD(s), count: hist.filter(e => weekIdx(e.t) === w).length, cur: false });
-  }
-  weekly.push({ label: "Periode", count: cur.length, cur: true });
+  for (let w = HISTORY_WEEKS - 1; w >= 0; w--) weekly.push({ start: pStart - (w + 1) * 7 * 864e5, count: hist.filter(e => weekIdx(e.t) === w).length, cur: false });
+  weekly.push({ start: null, count: cur.length, cur: true });
 
-  const flapping = active.filter(f => f.status.includes("blinker"));
-  return { from, to, sevs, periodDays, cur, hist, flapping, crossingsTotal: crossings ? crossings.length : null, incidents, patternList, active, gone, ctrlList, weekly,
-           baselinePerWeek, curPerWeek: cur.length * 7 / periodDays, insights: insights() };
+  return { from, to, sevs, periodDays, cur, hist, incidents, patternList, active, gone, ctrlList, weekly,
+           crossingsTotal: crossings ? crossings.length : null,
+           baselinePerWeek: hist.length / HISTORY_WEEKS, curPerWeek: cur.length * 7 / periodDays };
+}
 
-  /* ---- automatic observations, most important first ---- */
-  function insights() {
-    const out = [];
-    const flap = active.filter(f => f.status.includes("blinker"));
-    if (flap.length) {
-      const nFlap = flap.reduce((s, f) => s + f.n, 0);
-      const byC = {};
-      for (const f of flap) (byC[f.ctrl] = byC[f.ctrl] || []).push(f);
-      out.push({ lvl: "crit", html: `<b>${flap.length} ${flap.length === 1 ? "fejl blinker" : "fejl blinker"}</b> (mere end ${FLAP_PER_DAY} gange pr. døgn) og står for <b>${Math.round(nFlap / cur.length * 100)} % af alle hændelser</b> i perioden: ` +
-        Object.entries(byC).map(([c, l]) => `${esc(c)} (${l.map(f => `${esc(f.comp || f.family)} ${f.n.toLocaleString("da-DK")}×`).join(", ")})`).join("; ") +
-        `. En detektor der blinker skifter typisk mellem fejl og OK hele tiden – det skal udbedres på stedet, og indtil da drukner andre fejl i støjen.` });
-    }
-    for (const p of patternList.filter(p => p.list.length >= 3 && p.list.some(i => i.events.length >= 2) && p.list[0].detectors.length < 3).slice(0, 4)) {
-      const days = [...new Set(p.list.map(i => fmtD(i.start)))];
-      const hasCrit = p.signature.includes("Kritisk systemfejl") && p.signature.includes("+");
-      const evs = p.list.flatMap(i => i.events);
-      const extras = [...new Set(evs.flatMap(e => e.extra.map(x => x.replace(/\d+$/, "").trim())))];
-      out.push({ lvl: evs.some(e => e.sev === 4) ? "crit" : "warn",
-        html: `<b>${esc(p.ctrl)}:</b> ${esc(p.signature)} gentog sig <b>${p.list.length} gange</b> (${esc(days.join(", "))}).` +
-          (extras.length ? ` Ekstra info: ${esc(extras.join(", "))}.` : "") +
-          (hasCrit ? " Kritisk systemfejl kommer i samme sekund som den anden fejl – sandsynligvis en følgefejl, så det er én fejl at udbedre, ikke to." : "") });
-    }
-    const bursts = {};
-    for (const inc of incidents) if (inc.detectors.length >= 3) (bursts[inc.ctrl] = bursts[inc.ctrl] || []).push(inc);
-    for (const [ctrl, list] of Object.entries(bursts).sort((a, b) => b[1].length - a[1].length).slice(0, 3)) {
-      const big = list.reduce((m, i) => i.detectors.length > m.detectors.length ? i : m, list[0]);
-      out.push({ lvl: "warn", html: `<b>${esc(ctrl)}:</b> ` + (list.length === 1
-        ? `${big.detectors.length} detektorer faldt ud inden for ${Math.round((big.end - big.start) / 1000)} sek. den ${esc(fmtDT(big.start))} (${esc(big.detectors.join(", "))}).`
-        : `${list.length} gange faldt 3 eller flere detektorer ud samtidig – fx ${big.detectors.length} detektorer den ${esc(fmtDT(big.start))} (${esc(big.detectors.slice(0, 8).join(", "))}${big.detectors.length > 8 ? " …" : ""}).`) +
-        ` Når flere detektorer fejler samtidig, tyder det på en fælles årsag frem for fejl på de enkelte detektorer.` });
-    }
-    const persist = {};
-    for (const f of active.filter(f => f.status.includes("vedvarende"))) (persist[f.ctrl + "|" + f.family] = persist[f.ctrl + "|" + f.family] || []).push(f);
-    for (const list of Object.values(persist).slice(0, 5)) {
-      const f0 = list[0];
-      const items = list.map(f => `${f.comp || f.family} (${f.wp}/${HISTORY_WEEKS} uger, ${f.n}× nu)`).join(", ");
-      out.push({ lvl: "crit", html: list.length === 1
-        ? `<b>${esc(f0.ctrl)} – ${esc(faultLabel(f0))}:</b> har været der i <b>${f0.wp} af de ${HISTORY_WEEKS} foregående uger</b> og igen i perioden (${f0.n}×). Fejlen er ikke forsvundet af sig selv.`
-        : `<b>${esc(f0.ctrl)} – ${list.length} ${esc(f0.family.toLowerCase())} der bliver ved med at komme igen:</b> ${esc(items)}. De har været der i mindst ${PERSIST_WEEKS} af de ${HISTORY_WEEKS} foregående uger og er ikke forsvundet af sig selv.` });
-    }
-    for (const f of active.filter(f => f.status.includes("stigende") && !f.status.includes("vedvarende")).slice(0, 3)) {
-      out.push({ lvl: "warn", html: `<b>${esc(f.ctrl)} – ${esc(faultLabel(f))}:</b> stigende – ${f.n}× i perioden mod normalt ${f.avg.toFixed(1)} pr. uge.` });
-    }
-    for (const f of active.filter(f => f.n >= 3 && f.nightShare >= 0.75).slice(0, 3)) {
-      out.push({ lvl: "", html: `<b>${esc(f.ctrl)} – ${esc(faultLabel(f))}:</b> ${Math.round(f.nightShare * 100)} % af hændelserne sker om natten (22–06).` });
-    }
-    if (gone.length) out.push({ lvl: "", html: `${gone.length} fejl, som var der i flere af de foregående uger, er <b>ikke set i perioden</b> (muligvis udbedret) – se listen nederst.` });
-    if (hist.length) {
-      const pct = cur.length && cur.length * 7 / periodDays;
-      out.push({ lvl: "", html: `Perioden har ${cur.length.toLocaleString("da-DK")} hændelser (${Math.round(cur.length * 7 / periodDays).toLocaleString("da-DK")} pr. uge) mod gennemsnitligt ${Math.round(baselinePerWeek).toLocaleString("da-DK")} pr. uge de ${HISTORY_WEEKS} foregående uger.` });
-    } else {
-      out.push({ lvl: "", html: `Der er ingen hændelser i de ${HISTORY_WEEKS} foregående uger, så der kan ikke sammenlignes bagud.` });
-    }
-    return out;
+/* --------------------------- TEXT FOR FAULTS --------------------------- */
+const famLabel = (fam, comp) => fam === "other" ? comp : (L().fam[fam] || fam);
+const compLabel = (fam, comp) => fam === "lamp" ? t("signalGroup", { g: comp }) : fam === "other" ? "" : comp;
+const faultLabel = (f) => { const c = compLabel(f.fam, f.comp); return c ? `${famLabel(f.fam, f.comp)} – ${c}` : famLabel(f.fam, f.comp); };
+const extraLabel = (k, v) => k.startsWith("raw:") ? k.slice(4) : k === "raw" ? v : (L().extra[k] || k) + (v ? " " + v : "");
+
+/* automatic observations, most important first (built in the current language) */
+function insights(r) {
+  const out = [], F = L();
+  const flap = r.active.filter(f => f.status.includes("flap"));
+  if (flap.length) {
+    const nFlap = flap.reduce((s, f) => s + f.n, 0), byC = {};
+    for (const f of flap) (byC[f.ctrl] = byC[f.ctrl] || []).push(f);
+    const list = Object.entries(byC).map(([c, l]) => `${esc(c)} (${l.map(f => `${esc(compLabel(f.fam, f.comp) || famLabel(f.fam, f.comp))} ${num(f.n)}×`).join(", ")})`).join("; ");
+    out.push({ lvl: "crit", html: F.insFlap(flap.length, pct(nFlap / r.cur.length), list, FLAP_PER_DAY) });
   }
+  for (const p of r.patternList.filter(p => p.list.length >= 3 && p.list.some(i => i.events.length >= 2) && p.list[0].detectors.length < 3).slice(0, 4)) {
+    const days = [...new Set(p.list.map(i => fmtD(i.start)))].join(", ");
+    const sig = p.parts.map(x => faultLabel(x)).join(" + ");
+    const evs = p.list.flatMap(i => i.events);
+    const extras = [...new Set(evs.flatMap(e => e.extra.map(x => extraLabel(x.k, x.k === "raw" ? x.v : ""))))];
+    out.push({ lvl: evs.some(e => e.sev === 4) ? "crit" : "warn",
+      html: F.insPattern(esc(p.ctrl), esc(sig), p.list.length, esc(days)) + (extras.length ? F.insExtra(esc(extras.join(", "))) : "") +
+            (p.parts.length > 1 && p.parts.some(x => x.fam === "crit") ? F.insCritFollow : "") });
+  }
+  const bursts = {};
+  for (const inc of r.incidents) if (inc.detectors.length >= 3) (bursts[inc.ctrl] = bursts[inc.ctrl] || []).push(inc);
+  for (const [ctrl, list] of Object.entries(bursts).sort((a, b) => b[1].length - a[1].length).slice(0, 3)) {
+    const big = list.reduce((m, i) => i.detectors.length > m.detectors.length ? i : m, list[0]);
+    const dets = esc(big.detectors.slice(0, 8).join(", ") + (big.detectors.length > 8 ? " …" : ""));
+    out.push({ lvl: "warn", html: `<b>${esc(ctrl)}:</b> ` + (list.length === 1
+      ? F.insBurstOne(big.detectors.length, Math.round((big.end - big.start) / 1000), esc(fmtDT(big.start)), dets)
+      : F.insBurstMany(list.length, big.detectors.length, esc(fmtDT(big.start)), dets)) + F.insBurstTail });
+  }
+  const persist = {};
+  for (const f of r.active.filter(f => f.status.includes("persist"))) (persist[f.ctrl + "|" + f.fam] = persist[f.ctrl + "|" + f.fam] || []).push(f);
+  for (const list of Object.values(persist).slice(0, 5)) {
+    const f0 = list[0];
+    if (list.length === 1) out.push({ lvl: "crit", html: F.insPersistOne(esc(f0.ctrl), esc(faultLabel(f0)), f0.wp, HISTORY_WEEKS, num(f0.n)) });
+    else {
+      const items = list.map(f => `${compLabel(f.fam, f.comp) || famLabel(f.fam, f.comp)} (${f.wp}/${HISTORY_WEEKS} ${F.weeksWord}, ${num(f.n)}× ${F.nowWord})`).join(", ");
+      out.push({ lvl: "crit", html: F.insPersistMany(esc(f0.ctrl), list.length, esc(F.famPlural[f0.fam] || F.famPlural.other), esc(items), PERSIST_WEEKS, HISTORY_WEEKS) });
+    }
+  }
+  for (const f of r.active.filter(f => f.status.includes("rising") && !f.status.includes("persist")).slice(0, 3))
+    out.push({ lvl: "warn", html: F.insRising(esc(f.ctrl), esc(faultLabel(f)), num(f.n), num(f.avg, 1)) });
+  for (const f of r.active.filter(f => f.n >= 3 && f.nightShare >= 0.75).slice(0, 3))
+    out.push({ lvl: "", html: F.insNight(esc(f.ctrl), esc(faultLabel(f)), pct(f.nightShare)) });
+  if (r.gone.length) out.push({ lvl: "", html: F.insGone(r.gone.length) });
+  out.push({ lvl: "", html: r.hist.length ? F.insTotal(num(r.cur.length), num(r.curPerWeek), num(r.baselinePerWeek), HISTORY_WEEKS) : F.insNoHist(HISTORY_WEEKS) });
+  return out;
 }
 
 /* --------------------------- RENDER --------------------------- */
 function spark(weeks, now) {
   const vals = [...weeks].reverse().concat([now]);
   const mx = Math.max(1, ...vals);
-  return `<span class="spark" title="Uge for uge, ældste → periode: ${vals.join(" / ")}">` +
+  return `<span class="spark" title="${esc(t("sparkTitle", { v: vals.join(" / ") }))}">` +
     vals.map((v, i) => `<span class="${i === vals.length - 1 ? "cur" : v ? "" : "z"}" style="height:${v ? Math.max(3, v / mx * 20) : 2}px"></span>`).join("") + "</span>";
 }
-
 function weeklyChart(weekly) {
-  const W = 760, H = 190, L = 46, B = 30, T = 16, n = weekly.length, ih = H - B - T, cw = (W - L) / n, bw = cw * 0.6;
+  const W = 760, H = 190, Lp = 46, B = 30, T = 16, n = weekly.length, ih = H - B - T, cw = (W - Lp) / n, bw = cw * 0.6;
   const mx = Math.max(5, ...weekly.map(w => w.count));
   const top = mx <= 10 ? Math.ceil(mx / 2) * 2 : Math.ceil(mx / 10) * 10;
-  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Hændelser pr. uge">`;
-  for (const v of [0, top / 2, top]) { const y = T + ih - v / top * ih; s += `<line x1="${L}" x2="${W}" y1="${y}" y2="${y}" stroke="#e2e6ea"/><text x="${L - 6}" y="${y + 4}" font-size="11" fill="#79838d" text-anchor="end">${v}</text>`; }
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(t("chartAria"))}">`;
+  for (const v of [0, top / 2, top]) { const y = T + ih - v / top * ih; s += `<line x1="${Lp}" x2="${W}" y1="${y}" y2="${y}" stroke="#e2e6ea"/><text x="${Lp - 6}" y="${y + 4}" font-size="11" fill="#79838d" text-anchor="end">${num(v)}</text>`; }
   weekly.forEach((w, i) => {
-    const x = L + i * cw + (cw - bw) / 2, cx = L + i * cw + cw / 2, h = w.count / top * ih, y = T + ih - h;
-    if (h > 0) s += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="3" fill="${w.cur ? "#1f4f86" : "#7ea3cf"}"><title>${w.label}: ${w.count}</title></rect>`;
-    s += `<text x="${cx}" y="${y - 4}" font-size="11" fill="#4a545e" text-anchor="middle">${w.count}</text>`;
-    s += `<text x="${cx}" y="${H - B + 16}" font-size="11" fill="#4a545e" text-anchor="middle" ${w.cur ? 'font-weight="700"' : ""}>${w.label}</text>`;
+    const label = w.cur ? t("periodLbl") : fmtD(w.start);
+    const x = Lp + i * cw + (cw - bw) / 2, cx = Lp + i * cw + cw / 2, h = w.count / top * ih, y = T + ih - h;
+    if (h > 0) s += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="3" fill="${w.cur ? "#1f4f86" : "#7ea3cf"}"><title>${esc(label)}: ${num(w.count)}</title></rect>`;
+    s += `<text x="${cx}" y="${y - 4}" font-size="11" fill="#4a545e" text-anchor="middle">${num(w.count)}</text>`;
+    s += `<text x="${cx}" y="${H - B + 16}" font-size="11" fill="#4a545e" text-anchor="middle" ${w.cur ? 'font-weight="700"' : ""}>${esc(label)}</text>`;
   });
-  return s + `<line x1="${L}" x2="${W}" y1="${T + ih}" y2="${T + ih}" stroke="#79838d"/></svg>`;
+  return s + `<line x1="${Lp}" x2="${W}" y1="${T + ih}" y2="${T + ih}" stroke="#79838d"/></svg>`;
 }
-
 function delta(n, base) {
-  if (!base) return n ? "ingen de foregående uger" : "";
-  const pct = (n - base) / base * 100;
-  const cls = pct > 15 ? "up" : pct < -15 ? "down" : "";
-  return `<span class="${cls}">${pct > 0 ? "▲" : pct < 0 ? "▼" : ""} ${Math.abs(pct).toFixed(0)} %</span> ift. snit ${base >= 100 ? Math.round(base).toLocaleString("da-DK") : base.toFixed(1)}/uge`;
+  if (!base) return n ? esc(t("noPrev")) : "";
+  const p = (n - base) / base;
+  const cls = p > 0.15 ? "up" : p < -0.15 ? "down" : "";
+  return `<span class="${cls}">${p > 0 ? "▲" : p < 0 ? "▼" : ""} ${pct(Math.abs(p))}</span> ${esc(t("vsAvg", { b: base >= 100 ? num(base) : num(base, 1) }))}`;
 }
 
 function renderReport(r) {
-  const site = state.site, now = new Date();
-  const badge = (s) => `<span class="badge b-${s}">${{ blinker: "blinker", vedvarende: "vedvarende", stigende: "stigende", tilbagevendende: "tilbagevendende", ny: "ny", gentaget: "gentaget", udbedret: "ikke set nu" }[s]}</span>`;
+  const F = L(), site = r.site, W = HISTORY_WEEKS;
+  const badge = (s) => `<span class="badge b-${s}">${esc(F.st[s])}</span>`;
   const sevTxt = r.sevs.map(s => SEVERITY[s]).join(" + ");
-  let h = `<div class="rep-head"><h2>Fejlrapport – ${esc(r.area || site.name)}</h2>
-    <div class="sub">${r.area ? esc(site.name.replace(/ \(.*\)$/, "")) + " · " : ""}Periode ${fmtDate(r.from)} – ${fmtDate(r.to)} · Alvorlighed: ${esc(sevTxt)} · Sammenlignet med de ${HISTORY_WEEKS} foregående uger · Lavet ${now.toLocaleString("da-DK")}</div></div>`;
+  const headName = r.area || siteName(site);
+  const sub = [r.area ? (site.short || siteName(site)) : null, t("subPeriod", { a: fmtDate(r.from), b: fmtDate(r.to) }), t("subSev", { s: sevTxt }),
+               t("subCompared", { w: W }), t("subMade", { d: fmtFull(r.created) })].filter(Boolean);
+  let h = `<div class="rep-head"><h2>${esc(t("repTitle", { name: headName }))}</h2><div class="sub">${esc(sub.join(" · "))}</div></div>`;
 
   const crit = r.cur.filter(e => e.sev === 4).length;
-  const repeating = r.active.filter(f => f.status.includes("vedvarende") || f.status.includes("tilbagevendende")).length;
+  const repeating = r.active.filter(f => f.status.includes("persist") || f.status.includes("recur")).length;
+  const withFaults = r.ctrlList.filter(c => c.n).length;
   h += `<div class="tiles">
-    <div class="tile"><div class="k">Hændelser i perioden</div><div class="v">${r.cur.length.toLocaleString("da-DK")}</div><div class="d">${delta(r.curPerWeek, r.baselinePerWeek)}</div></div>
-    <div class="tile"><div class="k">Heraf Critical error</div><div class="v">${crit}</div><div class="d">${r.cur.length - crit} Error</div></div>
-    ${r.crossingsTotal ? `<div class="tile"><div class="k">Kryds uden fejl</div><div class="v">${r.crossingsTotal - r.ctrlList.filter(c => c.n).length} af ${r.crossingsTotal}</div><div class="d">i perioden</div></div>` : ""}
-    <div class="tile"><div class="k">Forskellige fejl</div><div class="v">${r.active.length}</div><div class="d">på ${r.ctrlList.filter(c => c.n).length} kryds · ${r.incidents.length} samlede hændelsesforløb</div></div>
-    <div class="tile"><div class="k">Fejl der kommer igen</div><div class="v">${repeating}</div><div class="d">set også i tidligere uger</div></div>
+    <div class="tile"><div class="k">${esc(t("tEvents"))}</div><div class="v">${num(r.cur.length)}</div><div class="d">${delta(r.curPerWeek, r.baselinePerWeek)}</div></div>
+    <div class="tile"><div class="k">${esc(t("tCrit"))}</div><div class="v">${num(crit)}</div><div class="d">${esc(t("tCritSub", { n: num(r.cur.length - crit) }))}</div></div>
+    ${r.crossingsTotal ? `<div class="tile"><div class="k">${esc(t("tNoFault"))}</div><div class="v">${esc(t("tNoFaultV", { a: r.crossingsTotal - withFaults, b: r.crossingsTotal }))}</div><div class="d">${esc(t("inPeriod"))}</div></div>` : ""}
+    <div class="tile"><div class="k">${esc(t("tFaults"))}</div><div class="v">${num(r.active.length)}</div><div class="d">${esc(t("tFaultsSub", { c: withFaults, i: num(r.incidents.length) }))}</div></div>
+    <div class="tile"><div class="k">${esc(t("tRepeat"))}</div><div class="v">${num(repeating)}</div><div class="d">${esc(t("tRepeatSub"))}</div></div>
   </div>`;
 
-  h += `<h3>Vigtigste observationer</h3><ul class="insights">${r.insights.map(i => `<li class="${i.lvl}">${i.html}</li>`).join("")}</ul>`;
+  h += `<h3>${esc(t("hInsights"))}</h3><ul class="insights">${insights(r).map(i => `<li class="${i.lvl}">${i.html}</li>`).join("")}</ul>`;
 
-  h += `<h3>Fejl i perioden – og om de har været der før</h3>
-    <p class="note">Én række = samme fejl på samme kryds (fx samme detektor eller signalgruppe). Søjlerne viser antal pr. uge de ${HISTORY_WEEKS} foregående uger og perioden (mørk).
-    <b>blinker</b> = mere end ${FLAP_PER_DAY} gange pr. døgn · <b>vedvarende</b> = set i mindst ${PERSIST_WEEKS} af ${HISTORY_WEEKS} uger · <b>tilbagevendende</b> = set 1–${PERSIST_WEEKS - 1} af ${HISTORY_WEEKS} uger · <b>ny</b> = ikke set i de ${HISTORY_WEEKS} uger · <b>gentaget</b> = flere gange eller flere dage i perioden.</p>
-    <div class="tablewrap"><table><thead><tr><th>Kryds</th><th>Fejl</th><th class="n">Antal</th><th class="n">Dage</th><th>Uge for uge</th><th class="n">Uger før</th><th>Status</th><th>Ekstra info</th><th>Senest</th></tr></thead><tbody>` +
-    r.active.map(f => `<tr><td>${esc(f.ctrl)}</td><td>${f.sev === 4 ? '<span class="sev sev-4">Critical</span> ' : ""}${esc(f.family)}${f.comp ? ` <code>${esc(f.comp)}</code>` : ""}${
-        Object.keys(f.details).length ? `<br><span class="small">${esc(Object.entries(f.details).map(([k, v]) => `${k} ${v}×`).join(", "))}</span>` : ""}${
-        f.withCrit ? `<br><span class="small">${f.withCrit}× sammen med kritisk systemfejl</span>` : ""}</td>
-      <td class="n"><b>${f.n.toLocaleString("da-DK")}</b></td><td class="n">${f.days}</td><td>${spark(f.weeks, f.n)}</td><td class="n">${f.wp}/${HISTORY_WEEKS}</td>
-      <td>${f.status.map(badge).join("")}</td><td class="small">${esc(Object.entries(f.extras).map(([k, v]) => `${k} (${v})`).join(", "))}</td><td>${esc(fmtDT(f.last))}</td></tr>`).join("") +
-    `</tbody></table></div>`;
+  const legend = [["flap", t("defFlap", { n: FLAP_PER_DAY })], ["persist", t("defPersist", { p: PERSIST_WEEKS, w: W })], ["recur", t("defRecur", { p1: PERSIST_WEEKS - 1, w: W })],
+                  ["new", t("defNew", { w: W })], ["repeat", t("defRepeat")]].map(([k, d]) => `<b>${esc(F.st[k])}</b> = ${esc(d)}`).join(" · ");
+  h += `<h3>${esc(t("hFaults"))}</h3><p class="note">${esc(t("faultsNote", { w: W }))} ${legend}.</p>
+    <div class="tablewrap"><table><thead><tr><th>${esc(t("thCrossing"))}</th><th>${esc(t("thFault"))}</th><th class="n">${esc(t("thCount"))}</th><th class="n">${esc(t("thDays"))}</th><th>${esc(t("thWeekly"))}</th><th class="n">${esc(t("thWeeksBefore"))}</th><th>${esc(t("thStatus"))}</th><th>${esc(t("thExtra"))}</th><th>${esc(t("thLast"))}</th></tr></thead><tbody>` +
+    r.active.map(f => {
+      const c = compLabel(f.fam, f.comp);
+      const colors = Object.entries(f.colors).map(([k, v]) => `${F.color[k] || k} ${v}×`).join(", ");
+      const extras = Object.entries(f.extras).map(([k, v]) => `${extraLabel(k)} (${v})`).join(", ");
+      return `<tr><td>${esc(f.ctrl)}</td><td>${f.sev === 4 ? '<span class="sev sev-4">Critical</span> ' : ""}${esc(famLabel(f.fam, f.comp))}${c ? ` <code>${esc(c)}</code>` : ""}${
+        colors ? `<br><span class="small">${esc(colors)}</span>` : ""}${f.withCrit ? `<br><span class="small">${esc(t("withCrit", { n: f.withCrit }))}</span>` : ""}</td>
+      <td class="n"><b>${num(f.n)}</b></td><td class="n">${f.days}</td><td>${spark(f.weeks, f.n)}</td><td class="n">${f.wp}/${W}</td>
+      <td>${f.status.map(badge).join("")}</td><td class="small">${esc(extras)}</td><td>${esc(fmtDT(f.last))}</td></tr>`;
+    }).join("") + `</tbody></table></div>`;
 
   const multi = r.patternList.filter(p => p.list.some(i => i.events.length >= 2)).slice(0, 25);
   if (multi.length) {
-    h += `<h3>Fejl der kommer sammen</h3>
-      <p class="note">Hændelser på samme kryds inden for ${INCIDENT_GAP_S} sekunder er samlet til ét forløb. Det viser, hvilke fejl der kommer sammen (fx en lampefejl der udløser en kritisk systemfejl).</p>
-      <div class="tablewrap"><table><thead><tr><th>Kryds</th><th>Forløb</th><th class="n">Gange</th><th>Tidspunkter</th></tr></thead><tbody>` +
-      multi.map(p => `<tr><td>${esc(p.ctrl)}</td><td>${esc(p.signature)}${p.list[0].detectors.length > 1 ? `<br><span class="small">${esc(p.list[0].detectors.join(", "))}</span>` : ""}</td><td class="n"><b>${p.list.length}</b></td>
+    h += `<h3>${esc(t("hTogether"))}</h3><p class="note">${esc(t("togetherNote", { s: INCIDENT_GAP_S }))}</p>
+      <div class="tablewrap"><table><thead><tr><th>${esc(t("thCrossing"))}</th><th>${esc(t("thSequence"))}</th><th class="n">${esc(t("thTimes"))}</th><th>${esc(t("thWhen"))}</th></tr></thead><tbody>` +
+      multi.map(p => `<tr><td>${esc(p.ctrl)}</td><td>${esc(p.parts.map(x => faultLabel(x)).join(" + "))}</td><td class="n"><b>${p.list.length}</b></td>
         <td class="small">${esc(p.list.slice(0, 12).map(i => fmtDT(i.start)).join(" · "))}${p.list.length > 12 ? " …" : ""}</td></tr>`).join("") + `</tbody></table></div>`;
   }
 
-  h += `<h3>Udvikling uge for uge</h3>${weeklyChart(r.weekly)}
-    <p class="small">Ugerne er de ${HISTORY_WEEKS} hele uger før periodens start (dato = ugens første dag).${r.periodDays !== 7 ? ` Perioden er ${r.periodDays} dage.` : ""}</p>`;
+  h += `<h3>${esc(t("hWeekly"))}</h3>${weeklyChart(r.weekly)}
+    <p class="small">${esc(t("weeklyNote", { w: W }) + (r.periodDays !== 7 ? t("periodDaysNote", { n: r.periodDays }) : ""))}</p>`;
 
-  h += `<h3>Pr. kryds</h3><div class="tablewrap"><table><thead><tr><th>Kryds</th><th class="n">I perioden</th><th class="n">Critical</th><th class="n">Error</th><th class="n">Forløb</th><th class="n">Snit/uge før</th></tr></thead><tbody>` +
-    r.ctrlList.filter(c => (r.crossingsTotal && r.crossingsTotal <= 40) || c.n > 0 || c.avg >= 0.5).map(c => `<tr><td>${esc(c.name)}</td><td class="n"><b>${c.n.toLocaleString("da-DK")}</b></td><td class="n">${c.crit.toLocaleString("da-DK")}</td><td class="n">${c.err.toLocaleString("da-DK")}</td><td class="n">${c.incidents}</td><td class="n">${c.avg.toFixed(1)}</td></tr>`).join("") +
+  h += `<h3>${esc(t("hPerCrossing"))}</h3><div class="tablewrap"><table><thead><tr><th>${esc(t("thCrossing"))}</th><th class="n">${esc(t("thInPeriod"))}</th><th class="n">Critical</th><th class="n">Error</th><th class="n">${esc(t("thIncidents"))}</th><th class="n">${esc(t("thAvgBefore"))}</th></tr></thead><tbody>` +
+    r.ctrlList.filter(c => (r.crossingsTotal && r.crossingsTotal <= 40) || c.n > 0 || c.avg >= 0.5)
+      .map(c => `<tr><td>${esc(c.name)}</td><td class="n"><b>${num(c.n)}</b></td><td class="n">${num(c.crit)}</td><td class="n">${num(c.err)}</td><td class="n">${num(c.incidents)}</td><td class="n">${num(c.avg, 1)}</td></tr>`).join("") +
     `</tbody></table></div>`;
 
   if (r.gone.length) {
-    h += `<h3>Fejl der ikke er set i perioden</h3><p class="note">Var der i mindst 2 af de ${HISTORY_WEEKS} foregående uger, men ikke i perioden – muligvis udbedret.</p>
-      <div class="tablewrap"><table><thead><tr><th>Kryds</th><th>Fejl</th><th>Uge for uge</th><th class="n">Uger før</th></tr></thead><tbody>` +
-      r.gone.map(f => `<tr><td>${esc(f.ctrl)}</td><td>${esc(faultLabel(f))}</td><td>${spark(f.weeks, 0)}</td><td class="n">${f.wp}/${HISTORY_WEEKS}</td></tr>`).join("") + `</tbody></table></div>`;
+    h += `<h3>${esc(t("hGone"))}</h3><p class="note">${esc(t("goneNote", { w: W }))}</p>
+      <div class="tablewrap"><table><thead><tr><th>${esc(t("thCrossing"))}</th><th>${esc(t("thFault"))}</th><th>${esc(t("thWeekly"))}</th><th class="n">${esc(t("thWeeksBefore"))}</th></tr></thead><tbody>` +
+      r.gone.map(f => `<tr><td>${esc(f.ctrl)}</td><td>${esc(faultLabel(f))}</td><td>${spark(f.weeks, 0)}</td><td class="n">${f.wp}/${W}</td></tr>`).join("") + `</tbody></table></div>`;
   }
 
   const shown = r.cur.length > EVENT_LIST_MAX ? r.cur.slice(-EVENT_LIST_MAX) : r.cur;
-  h += `<h3>Alle hændelser i perioden</h3><details><summary class="noprint">Vis ${r.cur.length > EVENT_LIST_MAX ? `de seneste ${EVENT_LIST_MAX} af ${r.cur.length.toLocaleString("da-DK")}` : r.cur.length} hændelser</summary><div class="tablewrap"><table>
-    <thead><tr><th>Tidspunkt</th><th>Kryds</th><th>Alvorlighed</th><th>Besked</th><th>Ekstra info</th></tr></thead><tbody>` +
-    [...shown].reverse().map(e => `<tr><td>${esc(new Date(e.t).toLocaleString("da-DK"))}</td><td>${esc(e.ctrl)}</td><td><span class="sev sev-${e.sev}">${esc(SEVERITY[e.sev] || e.sev)}</span></td>
-      <td>${esc(e.msg)} <span class="small">${esc(e.rawCode)}</span></td><td class="small">${esc(e.extra.join(", "))}</td></tr>`).join("") + `</tbody></table></div></details>`;
+  const summary = r.cur.length > EVENT_LIST_MAX ? t("showLatest", { m: EVENT_LIST_MAX, n: num(r.cur.length) }) : t("showN", { n: r.cur.length });
+  h += `<h3>${esc(t("hAll"))}</h3><details><summary class="noprint">${esc(summary)}</summary><div class="tablewrap"><table>
+    <thead><tr><th>${esc(t("thTime"))}</th><th>${esc(t("thCrossing"))}</th><th>${esc(t("thSeverity"))}</th><th>${esc(t("thMessage"))}</th><th>${esc(t("thExtra"))}</th></tr></thead><tbody>` +
+    [...shown].reverse().map(e => `<tr><td>${esc(fmtFull(e.t))}</td><td>${esc(e.ctrl)}</td><td><span class="sev sev-${e.sev}">${esc(SEVERITY[e.sev] || e.sev)}</span></td>
+      <td>${esc(e.msg)} <span class="small">${esc(e.rawCode)}</span></td><td class="small">${esc(e.extra.map(x => extraLabel(x.k, x.v)).join(", "))}</td></tr>`).join("") + `</tbody></table></div></details>`;
 
   $("report").innerHTML = h;
   $("result").classList.remove("hidden");
@@ -686,7 +896,7 @@ function downloadJson() {
   const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `edaptiva_${state.data.site}_${state.data.from}_${state.data.to}.json`;
+  a.download = `edaptiva_${state.data.site}${state.data.area ? "_" + state.data.area.replace(/\W+/g, "-") : ""}_${state.data.from}_${state.data.to}.json`;
   a.click(); URL.revokeObjectURL(a.href);
 }
 
@@ -694,25 +904,28 @@ function downloadJson() {
 (function init() {
   const sel = $("site");
   let last = null; try { last = localStorage.getItem("edaptiva-last-site"); } catch (e) {}
-  for (const s of SITES) { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; if (s.id === last) o.selected = true; sel.appendChild(o); }
-  if (SITES.length === 1) sel.closest("form").querySelector('label[for=site]').classList.add("hidden"), sel.classList.add("hidden");
+  for (const s of SITES) { const o = document.createElement("option"); o.value = s.id; o.textContent = siteName(s); if (s.id === last) o.selected = true; sel.appendChild(o); }
 
-  const today = new Date(), wk = new Date(today.getTime() - 7 * 864e5);
-  const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  $("to").value = ymd(new Date(today.getTime() - 864e5)); $("from").value = ymd(wk);
+  const today = new Date();
+  $("to").value = dayKey(today.getTime() - 864e5); $("from").value = dayKey(today.getTime() - 7 * 864e5);
 
   $("login-form").addEventListener("submit", login);
+  $("username").addEventListener("change", normaliseUsernameField);
+  $("username").addEventListener("input", () => { if ($("username").value.includes(CRED_SEP)) normaliseUsernameField(); });
   $("query-form").addEventListener("submit", fetchEvents);
   $("logout-btn").addEventListener("click", logout);
   $("dl-json").addEventListener("click", downloadJson);
   $("print-btn").addEventListener("click", () => window.print());
+  for (const b of document.querySelectorAll(".lang button")) b.addEventListener("click", () => setLang(b.dataset.lang));
+  if (credSupported()) { $("saved-btn").classList.remove("hidden"); $("saved-btn").addEventListener("click", useSavedLogin); }
 
+  setLang(LANG);
   try {  // stay logged in when the page is reloaded (same tab, key is valid for ~1 hour)
     const s = JSON.parse(sessionStorage.getItem("edaptiva-session") || "null");
     const site = s && SITES.find(x => x.id === s.site);
     if (site) { Object.assign(state, { site, token: s.token, deviceId: s.deviceId, user: s.user }); showApp(); }
   } catch (e) {}
-  log("Side klar. Kommuner:", SITES.map(s => s.id).join(", "));
+  log("Page ready. Instances:", SITES.map(s => s.id).join(", "));
 })();
 </script>
 </body>
